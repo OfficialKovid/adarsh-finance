@@ -1,0 +1,108 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+{% block title %} My Account {% endblock %}
+{% block css %}
+<style>
+.account-info {
+    width: 380px;
+    padding: 30px;
+    background: linear-gradient(145deg, #ffffff, #f5f5f5);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    transition: transform 0.3s ease;
+}
+
+.account-info:hover {
+    transform: translateY(-5px);
+}
+
+.account-info h2 {
+    margin-bottom: 25px;
+    color: #2c3e50;
+    font-size: 28px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.info-item {
+    margin-bottom: 20px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    color: #495057;
+    font-size: 16px;
+}
+
+.info-item strong {
+    color: #2c3e50;
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    padding: 0 10px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 25px;
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 14px;
+}
+
+.btn-orders {
+    background-color: #3498db;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+}
+
+.btn-orders:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
+
+.btn-logout {
+    background-color: #e74c3c;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.2);
+}
+
+.btn-logout:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div style="height: 90vh; display: flex; justify-content: center; align-items: center; background-color: #f8f9fa;">
+    <div class="account-info">
+        <h2>Account Information</h2>
+        <div class="info-item">
+            <strong>Username</strong>
+            {{request.user}}
+        </div>
+        <div class="info-item">
+            <strong>Email</strong>
+            {{request.user.email}}
+        </div>
+        <div class="btn-group">
+            <a href="/my-bookings/" class="btn btn-orders">My bookings</a>
+            <a href="/logout/" class="btn btn-logout">Logout</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

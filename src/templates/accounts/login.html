@@ -1,0 +1,139 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+{% block title %} Login {% endblock %}
+{% block css %}
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.cdnfonts.com/css/emotional-rescue-personal-use" rel="stylesheet">
+                
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
+    .brand-title {
+      font-family: 'Pacifico', cursive;
+      font-family: 'Emotional Rescue Personal Use', sans-serif;
+    }
+    .bgimageset {
+      background-image: url('{% static "/img/bg2.jpg" %}');
+    }
+    .toggle-password {
+      cursor: pointer;
+    }
+    .input-container {
+      position: relative;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-container input {
+      width: 100%;
+      padding: 12px;
+      padding-left: 12px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      outline: none; /* Add this line */
+    }
+
+    .input-container::before {
+      content: attr(data-label);
+      position: absolute;
+      top: -0.1rem;
+      left: 10px;
+      transform: translateY(-50%);
+      color: #888;
+      font-size: 14px;
+      background-color: white;
+      padding: 0 5px;
+      transition: all 0.3s ease;
+    }
+
+    .input-container input:focus {
+      border-color: #7AB730;
+      box-shadow: 0 0 0 1px #7AB730;
+      outline: none; /* Add this line */
+    }
+
+    .input-container input:focus + label {
+      color: #7AB730;
+    }
+  </style>
+{% endblock %}
+
+{% block body %}
+<body class="min-h-screen flex">
+  <!-- Left Section -->
+  <div class="hidden md:flex w-1/2 bg-cover bg-center bgimageset"  >
+    <div class=" w-full h-full flex flex-col items-center text-white p-6">
+      <div style="max-width: 80%; padding-top: 2.4rem;" >
+      <center>
+      <h1 class="text-5xl brand-title mb-4">Traveler Tours</h1>
+    </center>
+      <p class="text-center text-lg">Travel is the only purchase that enriches you in ways beyond material wealth</p>
+    </div>
+    </div>
+  </div>
+
+  <!-- Right Section -->
+  <div class="w-full md:w-1/2 flex flex-col justify-center items-center bg-white px-6 py-12">
+    <div class="max-w-sm w-full">
+      <div class="text-center mb-6">
+        <div class="flex justify-center items-center mb-4">
+          <span class="text-6xl font-bold " style="color: #7AB730;" >Welcome</span>
+        </div>
+        <p class="text-gray-600">Login with Email</p>
+      </div>
+      <form class="flex flex-col gap-2" method="POST">
+        {% csrf_token %}
+        {% if messages %}
+          {% for message in messages %}
+            <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+              <span class="font-medium">Alert!</span> {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+        <!-- Email Input -->
+        <div class="input-container" data-label="Email Id">
+          <input type="email" id="email" name="email" placeholder="thisuix@mail.com" required>
+        </div>
+        <!-- Password Input -->
+        <div class="input-container" data-label="Password">
+          <input type="password" id="password" name="password" placeholder="***********" required>
+          <div class="absolute inset-y-0 right-4 flex items-center toggle-password">
+            <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10 12C11.1046 12 12 11.1046 12 10C12 8.89543 11.1046 8 10 8C8.89543 8 8 8.89543 8 10C8 11.1046 8.89543 12 10 12ZM10 14C7.79086 14 6 12.2091 6 10C6 7.79086 7.79086 6 10 6C12.2091 6 14 7.79086 14 10C14 12.2091 12.2091 14 10 14Z M2.92394 9.44543C2.97481 9.14876 3.27925 8.96333 3.57592 9.0142C3.87259 9.06506 4.05802 9.36951 4.00716 9.66618C3.85846 10.5238 3.85846 11.4762 4.00716 12.3338C4.32004 14.0295 5.40755 15.5008 6.94627 16.3077C8.48498 17.1146 10.305 17.1666 11.8859 16.4515C13.4669 15.7364 14.6587 14.3207 15.0986 12.6248C15.2473 11.7672 15.2473 10.2328 15.0986 9.37524C14.6587 7.67934 13.4669 6.26362 11.8859 5.54853C10.305 4.83344 8.48498 4.88541 6.94627 5.69232C5.40755 6.49923 4.32004 7.97048 4.00716 9.66618C3.95629 9.96285 3.65185 10.1483 3.35518 10.0974C3.05851 10.0466 2.87307 9.74211 2.92394 9.44543Z M10 16C6.68629 16 4 13.3137 4 10C4 6.68629 6.68629 4 10 4C13.3137 4 16 6.68629 16 10C16 13.3137 13.3137 16 10 16Z"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Login Button -->
+        <div>
+          <button type="submit" class="w-full bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600" style="background-color: #7AB730;" >LOGIN</button>
+        </div>
+      </form>
+      <div class="mt-6 text-center">
+        <p class="text-sm">Don’t have an account? <a href="/signup/" class="text-blue-500 hover:underline">Register Now</a></p>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Existing password toggle code
+    document.querySelector('.toggle-password').addEventListener('click', function () {
+      const passwordInput = document.getElementById('password');
+      const eyeIcon = document.getElementById('eye-icon');
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        // Show eye-slash icon (password visible)
+        eyeIcon.innerHTML = `<path d="M3.70711 2.29289C3.31658 1.90237 2.68342 1.90237 2.29289 2.29289C1.90237 2.68342 1.90237 3.31658 2.29289 3.70711L16.2929 17.7071C16.6834 18.0976 17.3166 18.0976 17.7071 17.7071C18.0976 17.3166 18.0976 16.6834 17.7071 16.2929L16.2339 14.8197C17.3991 13.7795 18.3534 12.5165 19.0711 11.0711C19.1876 10.8356 19.1876 10.5644 19.0711 10.3289C17.4935 7.10827 13.9832 5 10 5C8.34184 5 6.78021 5.43241 5.41421 6.18377L3.70711 4.47666L3.70711 2.29289ZM7.96813 8.73769L9.43934 10.2089C9.61cd 10.0787 9.80081 10 10 10C10.5523 10 11 10.4477 11 11C11 11.1992 10.9213 11.3841 10.7911 11.5607L12.2623 13.0319C12.7135 12.4496 13 11.7485 13 11C13 9.34315 11.6569 8 10 8C9.25151 8 8.55044 8.28655 7.96813 8.73769ZM5.93035 6.64956L7.58889 8.30809C6.62678 9.12283 6 10.4877 6 12C6 14.2091 7.79086 16 10 16C11.5123 16 12.8772 15.3732 13.6919 14.4111L15.3504 16.0697C13.7861 17.2959 11.9772 18 10 18C6.01676 18 2.50661 15.8917 0.928932 12.6711C0.812332 12.4356 0.812332 12.1644 0.928932 11.9289C1.99544 9.75476 3.71119 7.98891 5.93035 6.64956Z"/>`;
+      } else {
+        passwordInput.type = 'password';
+        // Show eye icon (password hidden)
+        eyeIcon.innerHTML = `<path d="M10 12C11.1046 12 12 11.1046 12 10C12 8.89543 11.1046 8 10 8C8.89543 8 8 8.89543 8 10C8 11.1046 8.89543 12 10 12ZM10 14C7.79086 14 6 12.2091 6 10C6 7.79086 7.79086 6 10 6C12.2091 6 14 7.79086 14 10C14 12.2091 12.2091 14 10 14Z M2.92394 9.44543C2.97481 9.14876 3.27925 8.96333 3.57592 9.0142C3.87259 9.06506 4.05802 9.36951 4.00716 9.66618C3.85846 10.5238 3.85846 11.4762 4.00716 12.3338C4.32004 14.0295 5.40755 15.5008 6.94627 16.3077C8.48498 17.1146 10.305 17.1666 11.8859 16.4515C13.4669 15.7364 14.6587 14.3207 15.0986 12.6248C15.2473 11.7672 15.2473 10.2328 15.0986 9.37524C14.6587 7.67934 13.4669 6.26362 11.8859 5.54853C10.305 4.83344 8.48498 4.88541 6.94627 5.69232C5.40755 6.49923 4.32004 7.97048 4.00716 9.66618C3.95629 9.96285 3.65185 10.1483 3.35518 10.0974C3.05851 10.0466 2.87307 9.74211 2.92394 9.44543Z M10 16C6.68629 16 4 13.3137 4 10C4 6.68629 6.68629 4 10 4C13.3137 4 16 6.68629 16 10C16 13.3137 13.3137 16 10 16Z"/>`;
+      }
+    });
+  </script>
+</body>
+{% endblock %}

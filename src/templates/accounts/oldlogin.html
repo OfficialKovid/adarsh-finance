@@ -1,0 +1,52 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+{% block title %} Login {% endblock %}
+{% block css %} <link rel="stylesheet" href="{% static 'login-signup/style.css'%}"> 
+
+{% endblock %}
+
+{% block body %} 
+<div class="flex" style="height: 100vh;" >
+    <img src="{% static '/img/taloredSuitImg.jpeg' %}" alt="Login Background" class="h-full object-cover w-1/2" style="width: 50%; " />
+  <div style="width: 50%; display: flex; justify-content: center;align-items: center;">
+    <div class="login-form flex flex-col justify-center items-center w-full px-4" >
+      <h2 class="text-4xl font-bold mb-4">-Login-</h2>
+      <form class="flex flex-col gap-2" method="POST">
+        {% csrf_token%}
+        {% if messages%}
+        {% for message in messages%}
+        <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 " role="alert">
+            <span class="font-medium">Alert!</span> {{message}}
+          </div>
+        {% endfor %}
+        {% endif %}
+        <div class="form-group flex">
+          <label for="username" class="w-1/3 text-left">Username:</label>
+          <input type="text" id="username" name="username" required class="w-2/3 px-2 py-1 border rounded-md focus:outline-none" placeholder="Enter your username">
+        </div>
+        <div class="form-group flex">
+          <label for="password" class="w-1/3 text-left">Password:</label>
+          <input type="password" id="password" name="password" required class="w-2/3 px-2 py-1 border rounded-md focus:outline-none" placeholder="Enter your password">
+        </div>  
+        <button type="submit" class="bg-black hover:bg-gray-800  text-white font-bold py-2 px-4 rounded-md">Login</button>
+      </form>
+      <p class="mt-4 text-center">
+        Don't have an account? <a href="/signup/" class="text-blue-500">Register here</a>
+      </p>
+    </div>
+  </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% endblock %}
