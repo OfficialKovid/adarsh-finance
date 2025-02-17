@@ -20,4 +20,4 @@ def contact(request):
         messages.success(request, "Thank you for contacting us! Our customer service team will get back to you shortly.")
         return redirect('/contact/')
     
-    return render(request,"contact.html")
+    return render(request,"contact/contact.html")
