@@ -16,7 +16,7 @@ class LoanInfo(models.Model):
     tenure_months = models.PositiveSmallIntegerField()
     
     eligibility_criteria = models.TextField(max_length=500)
-    loan_slug = models.SlugField(max_length=50, blank=True, unique=True)
+    loan_slug = models.SlugField( blank=True, unique=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
