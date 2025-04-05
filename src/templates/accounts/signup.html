@@ -1,176 +1,416 @@
-{% extends 'accounts/base.html' %}
-{% load static %}
-{% block title %} Sign Up {% endblock %}
-{% block css %}
-  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.cdnfonts.com/css/emotional-rescue-personal-use" rel="stylesheet">
-                
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-    }
-    .brand-title {
-      font-family: 'Pacifico', cursive;
-      font-family: 'Emotional Rescue Personal Use', sans-serif;
-    }
-    .bgimageset {
-      background-image: url('{% static "/img/bg2.jpg" %}');
-    }
-    .form-floating {
-      position: relative;
-    }
-    .form-floating input {
-      height: 3.5rem;
-      padding: 1rem 0.75rem;
-    }
-    .form-floating label {
-      position: absolute;
-      top: 0;
-      left: 0;
-      padding: 1rem;
-      pointer-events: none;
-      transform-origin: 0 0;
-      transition: opacity .1s ease-in-out,transform .1s ease-in-out;
-      color: #6b7280;
-    }
-    .form-floating input:focus ~ label,
-    .form-floating input:not(:placeholder-shown) ~ label {
-      transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
-      background-color: white;
-      padding: 0 0.25rem;
-    }
-  </style>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - LoanPro</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
 
-{% block body %}
-<body class="min-h-screen flex">
-  <!-- Left Section -->
-  <div class="hidden md:flex w-1/2 bg-cover bg-center bgimageset">
-    <div class="w-full h-full flex flex-col items-center text-white p-6">
-      <div style="max-width: 80%; padding-top: 2.4rem;">
-        <center>
-          <h1 class="text-5xl brand-title mb-4">Traveler Tours</h1>
-        </center>
-        <p class="text-center text-lg">Travel is the only purchase that enriches you in ways beyond material wealth</p>
-      </div>
-    </div>
-  </div>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #f5f6fa;
+        }
 
-  <!-- Right Section -->
-  <div class="w-full md:w-1/2 flex flex-col justify-center items-center bg-white px-6 py-12">
-    <div class="max-w-sm w-full">
-      <div class="text-center mb-6">
-        <div class="flex justify-center items-center mb-4">
-          <span class="text-6xl font-bold" style="color: #7AB730;">Sign Up</span>
-        </div>
-        <p class="text-gray-600">Create a new account</p>
-      </div>
-      <form class="flex flex-col gap-2" method="POST" id="registrationForm">
-        {% csrf_token %}
-        {% if messages %}
-          {% for message in messages %}
-            <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-              <span class="font-medium">Alert!</span> {{ message }}
+        body {
+            min-height: 100vh;
+            display: flex;
+            background: var(--background-color);
+        }
+
+        .register-container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        /* Left Side - Form */
+        .register-form-container {
+            flex: 1;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .register-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .register-header h2 {
+            font-size: 32px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .register-header p {
+            color: #666;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+            outline: none;
+        }
+
+        .register-button {
+            background: var(--secondary-color);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .register-button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        /* Right Side - Image */
+        .register-image {
+            flex: 1;
+            background: linear-gradient(rgba(52, 152, 219, 0.8), rgba(44, 62, 80, 0.9)),
+                        url('https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?ixlib=rb-4.0.3') center/cover;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: white;
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .brand a {
+            text-decoration: none;
+            color: white;
+        }
+
+        .brand span {
+            color: #3498db;
+        }
+
+        .image-text {
+            max-width: 400px;
+        }
+
+        .image-text h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .image-text p {
+            font-size: 16px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .social-login {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .social-login p {
+            color: #666;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .social-login p::before,
+        .social-login p::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: #ddd;
+        }
+
+        .social-login p::before {
+            left: 0;
+        }
+
+        .social-login p::after {
+            right: 0;
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .social-icons a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ddd;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .social-icons a:hover {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+        }
+
+        .login-link a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Terms Checkbox */
+        .terms-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .terms-checkbox input {
+            margin-top: 5px;
+        }
+
+        .terms-checkbox label {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .terms-checkbox a {
+            color: var(--secondary-color);
+            text-decoration: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 968px) {
+            .register-container {
+                flex-direction: column;
+                margin: 20px;
+            }
+
+            .register-image {
+                padding: 60px 40px;
+            }
+
+            .image-text {
+                text-align: center;
+                margin: 0 auto;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .register-form-container {
+                padding: 40px 20px;
+            }
+
+            .register-image {
+                padding: 40px 20px;
+            }
+
+            .social-login p::before,
+            .social-login p::after {
+                width: 35%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <!-- Left Side - Form -->
+        <div class="register-form-container">
+            <div class="register-header">
+                <h2>Create Account</h2>
+                <p>Get started with your free account</p>
             </div>
-          {% endfor %}
-        {% endif %}
 
-        <!-- Email Input -->
-        <div class="mb-1">
-          <div class="form-floating relative">
-            <input type="email" id="email" name="email" placeholder=" " class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-[#7AB730] focus:border-[#7AB730]" required>
-            <label for="email" class="text-sm font-medium text-gray-700">Email</label>
-          </div>
+            <form id="registerForm" method="POST">
+                {% csrf_token %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <div class="input-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="firstName" name="firstName" class="form-control" placeholder="First name" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <div class="input-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="lastName" name="lastName" class="form-control" placeholder="Last name" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <div class="input-group">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" id="phone" name="phone" class="form-control" placeholder="Enter your phone number" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Create password" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm password" required>
+                    </div>
+                </div>
+
+                <div class="terms-checkbox">
+                    <input type="checkbox" id="terms" required>
+                    <label for="terms">
+                        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="register-button">Create Account</button>
+            </form>
+
+            <div class="social-login">
+                <p>Or register with</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-google"></i></a>
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-apple"></i></a>
+                </div>
+            </div>
+
+            <div class="login-link">
+                Already have an account? <a href="{% url 'login' %}">Sign In</a>
+            </div>
         </div>
-        <!-- Password Input -->
-        <div class="mb-1">
-          <div class="form-floating relative">
-            <input type="password" id="password" name="password" placeholder=" " class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-[#7AB730] focus:border-[#7AB730]" required>
-            <label for="password" class="text-sm font-medium text-gray-700">Password</label>
-            <button type="button" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500" onclick="toggleAllPasswordsVisibility()">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="password-eye">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-            </button>
-          </div>
+
+        <!-- Right Side - Image -->
+        <div class="register-image">
+            <div class="brand">
+                <a href="../index.html">
+                    Loan<span>Pro</span>
+                </a>
+            </div>
+            <div class="image-text">
+                <h2>Join Our Community</h2>
+                <p>Create an account to access personalized loan options, track your applications, and manage your financial journey with ease.</p>
+            </div>
         </div>
-        <!-- Confirm Password Input -->
-        <div class="mb-1">
-          <div class="form-floating relative">
-            <input type="password" id="confirm-password" name="confirm-password" placeholder=" " class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-[#7AB730] focus:border-[#7AB730]" required>
-            <label for="confirm-password" class="text-sm font-medium text-gray-700">Confirm Password</label>
-            <button type="button" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500" onclick="toggleAllPasswordsVisibility()">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="confirm-password-eye">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div id="passwordError" class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 hidden" role="alert">
-          <span class="font-medium">Alert!</span> Passwords do not match.
-        </div>
-        <!-- Register Button -->
-        <div>
-          <button type="submit" class="w-full text-white rounded-lg px-4 py-2 hover:bg-blue-600" id="submitBtn" style="background-color: #7AB730;">Register</button>
-        </div>
-      </form>
-      <div class="mt-6 text-center">
-        <p class="text-sm">Already have an account? <a href="/login/" class="text-blue-500 hover:underline">Login here</a></p>
-      </div>
     </div>
-  </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+            }
+        });
+    </script>
 </body>
-{% block js %}
-<script>
-  // Add focus/blur event handlers to all input fields
-  const inputs = document.querySelectorAll('input');
-  inputs.forEach(input => {
-    input.addEventListener('focus', function() {
-      this.style.borderColor = '#7AB730';
-      this.style.outline = 'none';
-      this.style.boxShadow = '0 0 0 1px #7AB730';
-    });
+</html>
 
-    input.addEventListener('blur', function() {
-      this.style.borderColor = '#D1D5DB';
-      this.style.boxShadow = 'none';
-    });
-  });
-
-  // Password match validation
-  document.getElementById('registrationForm').addEventListener('submit', function(event) {
-    var password = document.getElementById('password').value;
-    var confirmPassword = document.getElementById('confirm-password').value;
-    var passwordError = document.getElementById('passwordError');
-
-    if (password !== confirmPassword) {
-      passwordError.classList.remove('hidden');
-      event.preventDefault(); // Prevent form submission
-    } else {
-      passwordError.classList.add('hidden');
-    }
-  });
-
-  // Updated password visibility toggle
-  function toggleAllPasswordsVisibility() {
-    const passwordInputs = ['password', 'confirm-password'];
-    const currentType = document.getElementById('password').type;
-    const newType = currentType === 'password' ? 'text' : 'password';
-    
-    passwordInputs.forEach(inputId => {
-      const input = document.getElementById(inputId);
-      const eye = document.getElementById(inputId + '-eye');
-      
-      input.type = newType;
-      eye.innerHTML = newType === 'text' 
-        ? `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />`
-        : `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
-    });
-  }
-</script>
-{% endblock %}
-{% endblock %}
