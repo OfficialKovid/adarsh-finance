@@ -1,11 +1,461 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loans</title>
+    <title>AdarshFinance- Financial Solutions</title>
+    <!-- AOS CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    .hero {
+        height: 100vh;
+        width: 100%;
+        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+                url("{% static 'images/hero-img-l.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        padding-top: 80px;
+    }
+</style>
 </head>
 <body>
-    
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="#">Adarsh<span>Finance</span></a>
+            </div>
+            
+            <div class="menu-toggle" id="mobile-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <ul class="nav-links">
+                <li><a href="#home" class="active">Home</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#calculator">All Loans</a></li>
+                <li><a href="#why-us">About Us</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="./pages/login.html" class="nav-cta">Get Started</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content" data-aos="fade-up">
+            <h1>Financial Solutions for Your Business</h1>
+            <p>Discover the best government subsidy to meet your business needs.</p>
+            <a href="#contact" class="cta-button">Apply Now</a>
+        </div>
+    </section>
+
+    <section class="services" id="services">
+        <div class="services-header" data-aos="fade-up">
+            <h2>Our Loan Services</h2>
+            <p class="section-subtitle">Discover financial solutions tailored to your needs</p>
+        </div>
+        
+        <div class="services-grid">
+            <div class="service-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="service-icon-wrapper">
+                    <div class="service-icon">
+                        <img src="{% static 'logos/PMFME_LOGO_LATEST.png' %}" alt="Food Business">
+                    </div>
+                </div>
+                <div class="service-content">
+                    <h3>Food Related Business</h3>
+                    <p>Pradhan Mantri Formalisation of Micro food processing Enterprises</p>
+                    <ul class="service-features">
+                        <li><i class="fas fa-check"></i> Only for Food related business</li>
+                        <li><i class="fas fa-check"></i> Offers Upto 35% subsidy</li>
+                        <li><i class="fas fa-check"></i> Special focus is given to women entrepreneurs</li>
+                    </ul>
+                    <a href="#" class="service-btn">Learn More <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+
+            <div class="service-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="service-icon-wrapper">
+                    <div class="service-icon">
+                        <img src="{% static 'logos/Seal_of_Uttar_Pradesh.svg' %}" alt="Business Loan">
+                    </div>
+                </div>
+                <div class="service-content">
+                    <h3>Youth Startup Business Loans</h3>
+                    <p>CM Yuva Swarojgar Yojana (Uttar Pradesh)</p>
+                    <ul class="service-features">
+                        <li><i class="fas fa-check"></i> Any type of Business</li>
+                        <li><i class="fas fa-check"></i> Subsidies provided on Interest of the Loan</li>
+                        <li><i class="fas fa-check"></i> Special focus is given to youth entrepreneurs</li>
+                    </ul>
+                    <a href="#" class="service-btn">Learn More <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+
+            <div class="service-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="service-icon-wrapper">
+                    <div class="service-icon">
+                        <img src="{% static 'logos/CMYUVA.jpg' %}" alt="Home Loan">
+                    </div>
+                </div>
+                <div class="service-content">
+                    <h3>Entrepreneurship Empowerment Program</h3>
+                    <p>Mukhyamantri Yuva Udyami Vikas Abhiyan</p>
+                    <ul class="service-features">
+                        <li><i class="fas fa-check"></i> Any type of Business</li>
+                        <li><i class="fas fa-check"></i> Offers Upto 35% subsidy</li>
+                        <li><i class="fas fa-check"></i> Small to medium-sized enterprise</li>
+                    </ul>
+                    <a href="#" class="service-btn">Learn More <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Add this after the Services section and before Why Us section -->
+    <!-- <section class="calculator" id="calculator">
+        <div class="calculator-container">
+            <div class="section-header" data-aos="fade-up">
+                <h2>Loan Calculator</h2>
+                <p class="section-subtitle">Plan your loan with our easy-to-use calculator</p>
+            </div>
+
+            <div class="calculator-wrapper">
+                <div class="calculator-form" data-aos="fade-right">
+                    <div class="form-group">
+                        <label for="loanAmount">Loan Amount ($)</label>
+                        <input type="number" id="loanAmount" min="1000" max="1000000" value="50000">
+                        <input type="range" id="loanAmountSlider" min="1000" max="1000000" value="50000" step="1000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loanTerm">Loan Term (Years)</label>
+                        <input type="number" id="loanTerm" min="1" max="30" value="5">
+                        <input type="range" id="loanTermSlider" min="1" max="30" value="5">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="interestRate">Interest Rate (%)</label>
+                        <input type="number" id="interestRate" min="1" max="30" value="5.99" step="0.01">
+                        <input type="range" id="interestRateSlider" min="1" max="30" value="5.99" step="0.01">
+                    </div>
+                </div>
+
+                <div class="calculator-result" data-aos="fade-left">
+                    <div class="result-card">
+                        <h3>Monthly Payment</h3>
+                        <div class="amount" id="monthlyPayment">$966.28</div>
+                    </div>
+                    
+                    <div class="result-details">
+                        <div class="detail-item">
+                            <span>Total Payment</span>
+                            <span id="totalPayment">$57,976.80</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>Total Interest</span>
+                            <span id="totalInterest">$7,976.80</span>
+                        </div>
+                    </div>
+
+                    <button class="apply-btn">
+                        Apply Now
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section> -->
+
+    <section class="why-us" id="why-us">
+        <div class="why-us-container">
+            <div class="section-header" data-aos="fade-up">
+                <h2>Why Choose Us</h2>
+                <p class="section-subtitle">Experience the difference with our premium financial services</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Fast Approval</h3>
+                        <p>Get approved within 24 hours with our streamlined application process</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-clock"></i> Quick processing</li>
+                            <li><i class="fas fa-file-signature"></i> Minimal paperwork</li>
+                            <li><i class="fas fa-check-circle"></i> Instant decision</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Best Subsidy</h3>
+                        <p>Best-in-class interest rates tailored to your profile</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-chart-line"></i> Market-leading rates</li>
+                            <li><i class="fas fa-shield-alt"></i> No hidden fees</li>
+                            <li><i class="fas fa-handshake"></i> Flexible terms</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Expert Support</h3>
+                        <p>24/7 dedicated customer service for your peace of mind</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-phone-alt"></i> Round-the-clock support</li>
+                            <li><i class="fas fa-user-tie"></i> Personal advisors</li>
+                            <li><i class="fas fa-comments"></i> Live chat available</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section" id="contact">
+        <div class="contact-container">
+            <div class="section-header" data-aos="fade-up">
+                <h2>Get In Touch</h2>
+                <p class="section-subtitle">Have questions? We're here to help!</p>
+            </div>
+
+            <div class="contact-wrapper">
+                <!-- Contact Information -->
+                <div class="contact-info" data-aos="fade-right">
+                    <div class="info-header">
+                        <h3>Contact Information</h3>
+                        <p>Fill out the form and our team will get back to you within 24 hours.</p>
+                    </div>
+                    
+                    <div class="info-items">
+                        <div class="info-item">
+                            <i class="fas fa-phone"></i>
+                            <div>
+                                <h4>Call Us</h4>
+                                <p>+1 (555) 123-4567</p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <h4>Email Us</h4>
+                                <p>support@loanpro.com</p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <i class="fas fa-location-dot"></i>
+                            <div>
+                                <h4>Visit Us</h4>
+                                <p>123 Finance Street, NY 10001</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+
+                <!-- Contact Form -->
+                <div class="contact-form" data-aos="fade-left">
+                    <form id="contactForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">First Name*</label>
+                                <input type="text" id="firstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name*</label>
+                                <input type="text" id="lastName" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">Email Address*</label>
+                                <input type="email" id="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subject">Subject*</label>
+                            <select id="subject" required>
+                                <option value="">Select a subject</option>
+                                <option value="loan">Loan Inquiry</option>
+                                <option value="support">Customer Support</option>
+                                <option value="partnership">Partnership</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">Message*</label>
+                            <textarea id="message" rows="5" required></textarea>
+                        </div>
+
+                        <button type="submit" class="submit-btn">
+                            Send Message
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <!-- Company Info -->
+            <div class="footer-brand">
+                <h3 class="footer-logo">Adarsh<span>Finance</span></h3>
+                <p>&copy; 2025 AdarshFinance. All rights reserved.</p>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="footer-links">
+                <a href="#">About</a>
+                <a href="#">Services</a>
+                <a href="#">All Loans</a>
+                <a href="#">Contact</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms</a>
+            </div>
+
+            <!-- Social Links -->
+            <div class="footer-social">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AOS JavaScript -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+    </script>
+
+    <script>
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navLinks = document.querySelector('.nav-links');
+
+        mobileMenu.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+        });
+
+        // Change navbar background on scroll
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(255, 255, 255, 0.98)';
+                navbar.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+            } else {
+                navbar.style.background = 'rgba(255, 255, 255, 0.95)';
+                navbar.style.boxShadow = 'none';
+            }
+        });
+    </script>
+
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Add your form submission logic here
+            // You can use fetch API or any other method to send the data to your backend
+            
+            alert('Thank you for your message! We will get back to you soon.');
+            this.reset();
+        });
+    </script>
+
+    <script>
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                // Add active class to clicked link
+                this.classList.add('active');
+                
+                // Get the target section
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                
+                // Scroll to the target section smoothly
+                targetSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+        });
+
+        // Update active link on scroll
+        window.addEventListener('scroll', function() {
+            let current = '';
+            
+            document.querySelectorAll('section').forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                
+                if (pageYOffset >= (sectionTop - sectionHeight/3)) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').substring(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+
+
 </body>
 </html>
