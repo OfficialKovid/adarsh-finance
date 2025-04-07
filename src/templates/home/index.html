@@ -1,22 +1,15 @@
+{% extends 'base/base-website.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AdarshFinance- Financial Solutions</title>
-    <!-- AOS CSS -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static '/style.css' %}">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+{% block title %}AdarshFinance - Financial Solutions{% endblock %}
+{% block head %}
+
+<link rel="stylesheet" href="{% static '/style.css' %}">
 <style>
     .hero {
         height: 100vh;
         width: 100%;
         background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
-                url("{% static 'images/hero-img-l.jpg' %}");
+        url("{% static 'images/hero-img-l.jpg' %}");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -28,31 +21,9 @@
         padding-top: 80px;
     }
 </style>
-</head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <a href="#">Adarsh<span>Finance</span></a>
-            </div>
-            
-            <div class="menu-toggle" id="mobile-menu">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
+    {% endblock %}
 
-            <ul class="nav-links">
-                <li><a href="#home" class="active">Home</a></li>
-                <li><a href="#services">Services</a></li>
-                <li><a href="#calculator">All Loans</a></li>
-                <li><a href="#why-us">About Us</a></li>
-                <li><a href="#contact">Contact</a></li>
-                <li><a href="./pages/login.html" class="nav-cta">Get Started</a></li>
-            </ul>
-        </div>
-    </nav>
+{% block content %}
 
     <!-- Hero Section -->
     <section class="hero" id="home">
@@ -283,171 +254,4 @@
             </div>
         </div>
     </section>
-
-    <footer class="footer">
-        <div class="footer-content">
-            <!-- Company Info -->
-            <div class="footer-brand">
-                <h3 class="footer-logo">Adarsh<span>Finance</span></h3>
-                <p>&copy; 2025 AdarshFinance. All rights reserved.</p>
-            </div>
-
-            <!-- Quick Links -->
-            <div class="footer-links">
-                <a href="#">About</a>
-                <a href="#">Services</a>
-                <a href="#">All Loans</a>
-                <a href="#">Contact</a>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms</a>
-            </div>
-
-            <!-- Social Links -->
-            <div class="footer-social">
-                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-            </div>
-        </div>
-    </footer>
-
-    <!-- AOS JavaScript -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script>
-        AOS.init({
-            duration: 1000,
-            once: true
-        });
-    </script>
-
-    <script>
-        const mobileMenu = document.getElementById('mobile-menu');
-        const navLinks = document.querySelector('.nav-links');
-
-        mobileMenu.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            mobileMenu.classList.toggle('active');
-        });
-
-        // Change navbar background on scroll
-        window.addEventListener('scroll', () => {
-            const navbar = document.querySelector('.navbar');
-            if (window.scrollY > 50) {
-                navbar.style.background = 'rgba(255, 255, 255, 0.98)';
-                navbar.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
-            } else {
-                navbar.style.background = 'rgba(255, 255, 255, 0.95)';
-                navbar.style.boxShadow = 'none';
-            }
-        });
-    </script>
-
-    <script>
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Add your form submission logic here
-            // You can use fetch API or any other method to send the data to your backend
-            
-            alert('Thank you for your message! We will get back to you soon.');
-            this.reset();
-        });
-    </script>
-
-    <script>
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Remove active class from all links
-                document.querySelectorAll('.nav-links a').forEach(link => {
-                    link.classList.remove('active');
-                });
-                
-                // Add active class to clicked link
-                this.classList.add('active');
-                
-                // Get the target section
-                const targetId = this.getAttribute('href');
-                const targetSection = document.querySelector(targetId);
-                
-                // Scroll to the target section smoothly
-                targetSection.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            });
-        });
-
-        // Update active link on scroll
-        window.addEventListener('scroll', function() {
-            let current = '';
-            
-            document.querySelectorAll('section').forEach(section => {
-                const sectionTop = section.offsetTop;
-                const sectionHeight = section.clientHeight;
-                
-                if (pageYOffset >= (sectionTop - sectionHeight/3)) {
-                    current = section.getAttribute('id');
-                }
-            });
-            
-            document.querySelectorAll('.nav-links a').forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href').substring(1) === current) {
-                    link.classList.add('active');
-                }
-            });
-        });
-    </script>
-
-    <!-- Add this JavaScript for calculator functionality -->
-    <!-- <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const loanAmount = document.getElementById('loanAmount');
-            const loanAmountSlider = document.getElementById('loanAmountSlider');
-            const loanTerm = document.getElementById('loanTerm');
-            const loanTermSlider = document.getElementById('loanTermSlider');
-            const interestRate = document.getElementById('interestRate');
-            const interestRateSlider = document.getElementById('interestRateSlider');
-            
-            // Link inputs with sliders
-            function linkInputAndSlider(input, slider) {
-                input.addEventListener('input', () => {
-                    slider.value = input.value;
-                    calculateLoan();
-                });
-                
-                slider.addEventListener('input', () => {
-                    input.value = slider.value;
-                    calculateLoan();
-                });
-            }
-            
-            linkInputAndSlider(loanAmount, loanAmountSlider);
-            linkInputAndSlider(loanTerm, loanTermSlider);
-            linkInputAndSlider(interestRate, interestRateSlider);
-            
-            function calculateLoan() {
-                const principal = parseFloat(loanAmount.value);
-                const term = parseFloat(loanTerm.value) * 12; // Convert years to months
-                const rate = parseFloat(interestRate.value) / 100 / 12; // Convert annual rate to monthly
-                
-                // Calculate monthly payment
-                const monthlyPayment = (principal * rate * Math.pow(1 + rate, term)) / (Math.pow(1 + rate, term) - 1);
-                const totalPayment = monthlyPayment * term;
-                const totalInterest = totalPayment - principal;
-                
-                // Update results
-                document.getElementById('monthlyPayment').textContent = `$${monthlyPayment.toFixed(2)}`;
-                document.getElementById('totalPayment').textContent = `$${totalPayment.toFixed(2)}`;
-                document.getElementById('totalInterest').textContent = `$${totalInterest.toFixed(2)}`;
-            }
-            
-            // Initial calculation
-            calculateLoan();
-        });
-    </script> -->
-</body>
-</html>
+{% endblock %}

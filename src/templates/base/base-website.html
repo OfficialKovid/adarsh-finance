@@ -35,7 +35,7 @@
                 <li><a href="{% url 'list_loans' %}">All Loans</a></li>
                 <li><a href="#why-us">About Us</a></li>
                 <li><a href="#contact">Contact</a></li>
-                <li><a href="{% url 'login' %}" class="nav-cta">Get Started</a></li>
+                <li><a href="{% url 'login' %}" class="nav-cta">Log in</a></li>
             </ul>
         </div>
     </nav>
@@ -125,25 +125,29 @@
     <script>
         document.querySelectorAll('.nav-links a').forEach(link => {
             link.addEventListener('click', function(e) {
-                e.preventDefault();
+                const href = this.getAttribute('href');
                 
-                // Remove active class from all links
-                document.querySelectorAll('.nav-links a').forEach(link => {
-                    link.classList.remove('active');
-                });
-                
-                // Add active class to clicked link
-                this.classList.add('active');
-                
-                // Get the target section
-                const targetId = this.getAttribute('href');
-                const targetSection = document.querySelector(targetId);
-                
-                // Scroll to the target section smoothly
-                targetSection.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
+                // Only handle smooth scroll for anchor links
+                if (href.startsWith('#')) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all links
+                    document.querySelectorAll('.nav-links a').forEach(link => {
+                        link.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked link
+                    this.classList.add('active');
+                    
+                    // Get the target section and scroll to it
+                    const targetSection = document.querySelector(href);
+                    if (targetSection) {
+                        targetSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
             });
         });
 
@@ -151,7 +155,7 @@
         window.addEventListener('scroll', function() {
             let current = '';
             
-            document.querySelectorAll('section').forEach(section => {
+            document.querySelectorAll('section[id]').forEach(section => {
                 const sectionTop = section.offsetTop;
                 const sectionHeight = section.clientHeight;
                 
@@ -162,7 +166,8 @@
             
             document.querySelectorAll('.nav-links a').forEach(link => {
                 link.classList.remove('active');
-                if (link.getAttribute('href').substring(1) === current) {
+                const href = link.getAttribute('href');
+                if (href.startsWith('#') && href.substring(1) === current) {
                     link.classList.add('active');
                 }
             });
