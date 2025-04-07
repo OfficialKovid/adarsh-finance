@@ -1,0 +1,76 @@
+{% extends 'base/base-website.html' %}
+{% load static %}
+{% block title %}Adarsh Finance - All Loans{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'loan/loan-style.css' %}">
+
+
+{% endblock %}
+
+{% block content %}
+
+
+    <section class="services" id="services" style="margin-top: 2rem;">
+        <div class="services-header" data-aos="fade-up">
+            <h2>Our All Loan Services</h2>
+            <p class="section-subtitle">Discover financial solutions tailored to your needs</p>
+        </div>
+        
+        <div class="services-grid">
+            <div class="service-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="service-icon-wrapper">
+                    <div class="service-icon" style="background-color: white;">
+                        <img src="{% static 'logos/PMFME_LOGO_LATEST.png' %}" alt="Food Business">
+                    </div>
+                </div>
+                <div class="service-content">
+                    <h3>Food Related Business</h3>
+                    <p>Pradhan Mantri Formalisation of Micro food processing Enterprises</p>
+                    <ul class="service-features">
+                        <li><i class="fas fa-check"></i> Only for Food related business</li>
+                        <li><i class="fas fa-check"></i> Offers Upto 35% subsidy</li>
+                        <li><i class="fas fa-check"></i> Special focus is given to women entrepreneurs</li>
+                    </ul>
+                    <a href="#" class="service-btn">Learn More <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+
+            <div class="service-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="service-icon-wrapper">
+                    <div class="service-icon" style="background-color: white;">
+                        <img src="{% static 'logos/Seal_of_Uttar_Pradesh.svg' %}" alt="Business Loan">
+                    </div>
+                </div>
+                <div class="service-content">
+                    <h3>Youth Startup Business Loans</h3>
+                    <p>CM Yuva Swarojgar Yojana (Uttar Pradesh)</p>
+                    <ul class="service-features">
+                        <li><i class="fas fa-check"></i> Any type of Business</li>
+                        <li><i class="fas fa-check"></i> Subsidies provided on Interest of the Loan</li>
+                        <li><i class="fas fa-check"></i> Special focus is given to youth entrepreneurs</li>
+                    </ul>
+                    <a href="#" class="service-btn">Learn More <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+
+            <div class="service-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="service-icon-wrapper">
+                    <div class="service-icon" style="background-color: white;">
+                        <img src="{% static 'logos/CMYUVA.jpg' %}" alt="Home Loan">
+                    </div>
+                </div>
+                <div class="service-content">
+                    <h3>Entrepreneurship Empowerment Program</h3>
+                    <p>Mukhyamantri Yuva Udyami Vikas Abhiyan</p>
+                    <ul class="service-features">
+                        <li><i class="fas fa-check"></i> Any type of Business</li>
+                        <li><i class="fas fa-check"></i> Offers Upto 35% subsidy</li>
+                        <li><i class="fas fa-check"></i> Small to medium-sized enterprise</li>
+                    </ul>
+                    <a href="#" class="service-btn">Learn More <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}
