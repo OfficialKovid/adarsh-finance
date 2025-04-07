@@ -3,13 +3,103 @@
 {% block title %}Adarsh Finance - All Loans{% endblock %}
 {% block head %}
     <link rel="stylesheet" href="{% static 'loan/loan-style.css' %}">
-
-
+    <style>
+        .add-loan-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #007bff;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        .add-loan-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            background: #0056b3;
+            color: white;
+        }
+        .no-loans {
+            text-align: center;
+            padding: 50px 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
+<section class="services" id="services" style="margin-top: 2rem;">
+    <div class="services-header" data-aos="fade-up">
+        <h2>Our All Loan Services</h2>
+        <p class="section-subtitle">Discover financial solutions tailored to your needs</p>
+    </div>
+    
+    <div class="services-grid">
+        <div class="service-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="service-icon-wrapper">
+                <div class="service-icon" style="background-color: white;">
+                    <img src="{% static 'logos/PMFME_LOGO_LATEST.png' %}" alt="Food Business">
+                </div>
+            </div>
+            <div class="service-content">
+                <h3>Food Related Business</h3>
+                <p>Pradhan Mantri Formalisation of Micro food processing Enterprises</p>
+                <ul class="service-features">
+                    <li><i class="fas fa-check"></i> Only for Food related business</li>
+                    <li><i class="fas fa-check"></i> Offers Upto 35% subsidy</li>
+                    <li><i class="fas fa-check"></i> Special focus is given to women entrepreneurs</li>
+                </ul>
+                <a href="#" class="service-btn">Learn More <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
 
+        <div class="service-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="service-icon-wrapper">
+                <div class="service-icon" style="background-color: white;">
+                    <img src="{% static 'logos/Seal_of_Uttar_Pradesh.svg' %}" alt="Business Loan">
+                </div>
+            </div>
+            <div class="service-content">
+                <h3>Youth Startup Business Loans</h3>
+                <p>CM Yuva Swarojgar Yojana (Uttar Pradesh)</p>
+                <ul class="service-features">
+                    <li><i class="fas fa-check"></i> Any type of Business</li>
+                    <li><i class="fas fa-check"></i> Subsidies provided on Interest of the Loan</li>
+                    <li><i class="fas fa-check"></i> Special focus is given to youth entrepreneurs</li>
+                </ul>
+                <a href="#" class="service-btn">Learn More <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
 
+        <div class="service-card" data-aos="fade-up" data-aos-delay="300">
+            <div class="service-icon-wrapper">
+                <div class="service-icon" style="background-color: white;">
+                    <img src="{% static 'logos/CMYUVA.jpg' %}" alt="Home Loan">
+                </div>
+            </div>
+            <div class="service-content">
+                <h3>Entrepreneurship Empowerment Program</h3>
+                <p>Mukhyamantri Yuva Udyami Vikas Abhiyan</p>
+                <ul class="service-features">
+                    <li><i class="fas fa-check"></i> Any type of Business</li>
+                    <li><i class="fas fa-check"></i> Offers Upto 35% subsidy</li>
+                    <li><i class="fas fa-check"></i> Small to medium-sized enterprise</li>
+                </ul>
+                <a href="#" class="service-btn">Learn More <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+</section>
     <section class="services" id="services" style="margin-top: 2rem;">
         <div class="services-header" data-aos="fade-up">
             <h2>Our All Loan Services</h2>
@@ -17,60 +107,51 @@
         </div>
         
         <div class="services-grid">
-            <div class="service-card" data-aos="fade-up" data-aos-delay="100">
-                <div class="service-icon-wrapper">
-                    <div class="service-icon" style="background-color: white;">
-                        <img src="{% static 'logos/PMFME_LOGO_LATEST.png' %}" alt="Food Business">
+            {% if loans %}
+                {% for loan in loans %}
+                    <div class="service-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter }}00">
+                        <div class="service-icon-wrapper">
+                            <div class="service-icon" style="background-color: white;">
+                                {% if loan.image %}
+                                    <img src="{{ loan.image.url }}" alt="{{ loan.title }}">
+                                {% else %}
+                                    <i class="fas fa-money-bill-wave"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="service-content">
+                            <h3>{{ loan.title }}</h3>
+                            <p>{{ loan.full_name|default:loan.title }}</p>
+                            <ul class="service-features">
+                                {% for point in loan.key_points.all|slice:":3" %}
+                                    <li><i class="fas fa-check"></i> {{ point.point }}</li>
+                                {% endfor %}
+                            </ul>
+                            <div class="service-sectors">
+                                <small>Sectors: 
+                                    {% for sector in loan.covered_sectors.all %}
+                                        <span class="sector-badge">{{ sector.sector_name }}</span>
+                                        {% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </small>
+                            </div>
+                            <a href="{% url 'loan_details' loan.slug %}" class="service-btn">Learn More <i class="fas fa-arrow-right"></i></a>
+                        </div>
                     </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-loans">
+                    <h3>No loan schemes available at the moment</h3>
+                    <p>Please check back later for new loan schemes</p>
                 </div>
-                <div class="service-content">
-                    <h3>Food Related Business</h3>
-                    <p>Pradhan Mantri Formalisation of Micro food processing Enterprises</p>
-                    <ul class="service-features">
-                        <li><i class="fas fa-check"></i> Only for Food related business</li>
-                        <li><i class="fas fa-check"></i> Offers Upto 35% subsidy</li>
-                        <li><i class="fas fa-check"></i> Special focus is given to women entrepreneurs</li>
-                    </ul>
-                    <a href="#" class="service-btn">Learn More <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-
-            <div class="service-card" data-aos="fade-up" data-aos-delay="200">
-                <div class="service-icon-wrapper">
-                    <div class="service-icon" style="background-color: white;">
-                        <img src="{% static 'logos/Seal_of_Uttar_Pradesh.svg' %}" alt="Business Loan">
-                    </div>
-                </div>
-                <div class="service-content">
-                    <h3>Youth Startup Business Loans</h3>
-                    <p>CM Yuva Swarojgar Yojana (Uttar Pradesh)</p>
-                    <ul class="service-features">
-                        <li><i class="fas fa-check"></i> Any type of Business</li>
-                        <li><i class="fas fa-check"></i> Subsidies provided on Interest of the Loan</li>
-                        <li><i class="fas fa-check"></i> Special focus is given to youth entrepreneurs</li>
-                    </ul>
-                    <a href="#" class="service-btn">Learn More <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-
-            <div class="service-card" data-aos="fade-up" data-aos-delay="300">
-                <div class="service-icon-wrapper">
-                    <div class="service-icon" style="background-color: white;">
-                        <img src="{% static 'logos/CMYUVA.jpg' %}" alt="Home Loan">
-                    </div>
-                </div>
-                <div class="service-content">
-                    <h3>Entrepreneurship Empowerment Program</h3>
-                    <p>Mukhyamantri Yuva Udyami Vikas Abhiyan</p>
-                    <ul class="service-features">
-                        <li><i class="fas fa-check"></i> Any type of Business</li>
-                        <li><i class="fas fa-check"></i> Offers Upto 35% subsidy</li>
-                        <li><i class="fas fa-check"></i> Small to medium-sized enterprise</li>
-                    </ul>
-                    <a href="#" class="service-btn">Learn More <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
+            {% endif %}
         </div>
     </section>
 
+    {% if user.is_staff %}
+        <a href="{% url 'add_new_loan' %}" class="add-loan-btn">
+            <i class="fas fa-plus"></i>
+            Add New Loan
+        </a>
+    {% endif %}
 {% endblock %}
