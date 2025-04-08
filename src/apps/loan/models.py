@@ -75,3 +75,28 @@ class KeyPoint(models.Model):
 
     def __str__(self):
         return f"Key point for {self.scheme.title}"
+
+
+class LoanApplication(models.Model):
+    name = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=15)
+    scheme = models.ForeignKey(LoanScheme, on_delete=models.CASCADE, related_name='applications')
+    applied_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending', 'Pending'),
+            ('contacted', 'Contacted'),
+            ('completed', 'Completed'),
+            ('cancelled', 'Cancelled')
+        ],
+        default='pending'
+    )
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-applied_at']
+
+    def __str__(self):
+        return f"{self.name} - {self.scheme.title}"
+

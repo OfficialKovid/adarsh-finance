@@ -120,6 +120,184 @@
             grid-template-columns: 1fr;
         }
     }
+
+    /* Scoped Modal Styles */
+    .loan-application-modal .modal-content {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .loan-application-modal .modal-header {
+        background: #f8f9fa;
+        border-bottom: 1px solid #eee;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .loan-application-modal .modal-body {
+        padding: 25px;
+    }
+
+    .loan-application-modal .modal-footer {
+        border-top: 1px solid #eee;
+        padding: 15px 25px;
+    }
+
+    /* Override any conflicting styles */
+    .apply-btn {
+        border: none;
+        cursor: pointer;
+    }
+
+    /* Modern Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(17, 24, 39, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .modal.show {
+        opacity: 1;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-dialog {
+        width: 90%;
+        max-width: 480px;
+        transform: translateY(20px);
+        transition: transform 0.3s ease;
+    }
+
+    .modal.show .modal-dialog {
+        transform: translateY(0);
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #f3f4f6;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .btn-close {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: none;
+        background: #f3f4f6;
+        color: #4b5563;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-close:hover {
+        background: #e5e7eb;
+        transform: rotate(90deg);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .form-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        outline: none;
+    }
+
+    .modal-footer {
+        padding: 1.25rem 1.5rem;
+        border-top: 1px solid #f3f4f6;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    .btn {
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+        background: #3b82f6;
+        color: white;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #4b5563;
+        border: none;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+    }
+
+    /* Success Modal Specific */
+    .success-icon {
+        color: #10b981;
+        font-size: 48px;
+        margin-bottom: 1rem;
+        animation: successPop 0.4s ease;
+    }
+
+    @keyframes successPop {
+        0% { transform: scale(0.8); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
 </style>
 {% endblock %}
 
@@ -221,11 +399,119 @@
     </div>
     {% endif %}
 
+    <!-- Apply Button -->
     <div class="text-center" data-aos="fade-up">
-        <a href="#" class="apply-btn">
+        <button type="button" class="apply-btn" onclick="openModal('applyModal')">
             Apply Now
             <i class="fas fa-arrow-right"></i>
-        </a>
+        </button>
     </div>
 </div>
+
+<!-- Modals inside content block -->
+<div class="modal" id="applyModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Apply for {{ loan.title }}</h5>
+                <button type="button" class="btn-close" onclick="closeModal('applyModal')">&times;</button>
+            </div>
+            <form id="applicationForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="applicantName" class="form-label">Your Name*</label>
+                        <input type="text" class="form-control" id="applicantName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="applicantPhone" class="form-label">Phone Number*</label>
+                        <input type="tel" class="form-control" id="applicantPhone" name="phone_number" 
+                               pattern="[0-9]{10}" title="Please enter valid 10-digit number" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('applyModal')">Close</button>
+                    <button type="submit" class="btn btn-primary">Submit Application</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="successModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Congratulations! 🎉</h5>
+                <button type="button" class="btn-close" onclick="closeModal('successModal')">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="fas fa-check-circle text-success" style="font-size: 48px; margin-bottom: 20px;"></i>
+                <p>Thank you for taking the first step towards your growth!</p>
+                <p>Our customer support team will contact you shortly to guide you through the process.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="closeModal('successModal')">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('show');
+    document.body.style.overflow = 'auto';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Close modal when clicking outside
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal(this.id);
+            }
+        });
+    });
+
+    // Handle form submission
+    const form = document.getElementById('applicationForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('{% url "apply_loan" loan.slug %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    closeModal('applyModal');
+                    setTimeout(() => openModal('successModal'), 300);
+                    this.reset();
+                } else {
+                    alert('Error processing application. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error processing application. Please try again.');
+            });
+        });
+    }
+});
+</script>
 {% endblock %}

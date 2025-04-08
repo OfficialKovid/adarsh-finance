@@ -1,0 +1,198 @@
+{% extends 'base/base-website.html' %}
+{% load static %}
+
+{% block title %}Loan Applications - Admin{% endblock %}
+
+{% block head %}
+<style>
+    .applications-section {
+        padding: 120px 0 80px;
+        background: #f8f9fa;
+    }
+
+    .applications-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .applications-table {
+        width: 100%;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    .applications-table th {
+        background: #007bff;
+        color: white;
+        padding: 15px;
+        text-align: left;
+    }
+
+    .applications-table td {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .applications-table tr:hover {
+        background: #f8f9fa;
+    }
+
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.9em;
+    }
+
+    .status-pending { background: #ffeeba; color: #856404; }
+    .status-contacted { background: #b8daff; color: #004085; }
+    .status-completed { background: #c3e6cb; color: #155724; }
+    .status-cancelled { background: #f5c6cb; color: #721c24; }
+
+    .action-btn {
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .filters {
+        margin-bottom: 20px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .filter-group select {
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="applications-section">
+    <div class="applications-container">
+        <h2>Loan Applications</h2>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label>Status:</label>
+                <select id="statusFilter">
+                    <option value="">All</option>
+                    <option value="pending">Pending</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Scheme:</label>
+                <select id="schemeFilter">
+                    <option value="">All</option>
+                    {% for scheme in schemes %}
+                    <option value="{{ scheme.id }}">{{ scheme.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="applications-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Scheme</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td>{{ app.applied_at|date:"M d, Y H:i" }}</td>
+                        <td>{{ app.name }}</td>
+                        <td>{{ app.phone_number }}</td>
+                        <td>{{ app.scheme.title }}</td>
+                        <td>
+                            <span class="status-badge status-{{ app.status }}">
+                                {{ app.status|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <select class="action-btn" data-application-id="{{ app.id }}">
+                                <option value="">Update Status</option>
+                                <option value="pending" {% if app.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="contacted" {% if app.status == 'contacted' %}selected{% endif %}>Contacted</option>
+                                <option value="completed" {% if app.status == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="cancelled" {% if app.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block js %}
+<script>
+    document.querySelectorAll('.action-btn').forEach(select => {
+        select.addEventListener('change', function() {
+            const applicationId = this.dataset.applicationId;
+            const status = this.value;
+            
+            if (!status) return;
+
+            fetch(`/loans/applications/${applicationId}/update-status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ status: status })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Update the status badge without reloading
+                    const row = this.closest('tr');
+                    const statusBadge = row.querySelector('.status-badge');
+                    statusBadge.className = `status-badge status-${status}`;
+                    statusBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+                } else {
+                    alert('Error updating status');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating status');
+            });
+        });
+    });
+
+    // Filter functionality
+    document.getElementById('statusFilter').addEventListener('change', applyFilters);
+    document.getElementById('schemeFilter').addEventListener('change', applyFilters);
+
+    function applyFilters() {
+        const status = document.getElementById('statusFilter').value;
+        const scheme = document.getElementById('schemeFilter').value;
+        window.location.href = `/loans/applications/?status=${status}&scheme=${scheme}`;
+    }
+</script>
+{% endblock %}

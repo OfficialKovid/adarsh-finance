@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import LoanScheme, Benefit, EligibilityCriteria, RequiredDocument, CoveredSector, KeyPoint
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .models import LoanScheme, Benefit, EligibilityCriteria, RequiredDocument, CoveredSector, KeyPoint, LoanApplication
 
 def list_loans(request):
     loans = LoanScheme.objects.filter(is_active=True).prefetch_related(
@@ -87,3 +89,48 @@ def loan_details(request, slug):
         'key_points': loan.key_points.all()[:3]
     }
     return render(request, 'loan/loan_details.html', context)
+
+@require_POST
+def apply_loan(request, slug):
+    try:
+        loan = get_object_or_404(LoanScheme, slug=slug)
+        application = LoanApplication.objects.create(
+            name=request.POST['name'],
+            phone_number=request.POST['phone_number'],
+            scheme=loan
+        )
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)})
+
+@login_required
+@user_passes_test(is_staff_user)
+def applications_list(request):
+    applications = LoanApplication.objects.select_related('scheme').all()
+    
+    # Apply filters
+    status = request.GET.get('status')
+    scheme = request.GET.get('scheme')
+    
+    if status:
+        applications = applications.filter(status=status)
+    if scheme:
+        applications = applications.filter(scheme_id=scheme)
+        
+    context = {
+        'applications': applications,
+        'schemes': LoanScheme.objects.all()
+    }
+    return render(request, 'loan/applications_list.html', context)
+
+@login_required
+@user_passes_test(is_staff_user)
+@require_POST
+def update_application_status(request, application_id):
+    try:
+        application = LoanApplication.objects.get(id=application_id)
+        application.status = request.POST.get('status')
+        application.save()
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)})
