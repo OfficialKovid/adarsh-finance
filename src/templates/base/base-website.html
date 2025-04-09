@@ -11,6 +11,49 @@
     <link rel="stylesheet" href="{% static 'base/base-style.css' %}">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .user-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .user-menu-btn {
+            background: none;
+            border: none;
+            color: #333;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 8px;
+        }
+
+        .user-menu-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            min-width: 200px;
+            z-index: 1000;
+        }
+
+        .user-menu-dropdown.active {
+            display: block;
+        }
+
+        .user-menu-dropdown a {
+            display: block;
+            padding: 12px 20px;
+            color: #333;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .user-menu-dropdown a:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
 {% block head %}
 {% endblock %}
     
@@ -35,7 +78,29 @@
                 <li><a href="{% url 'list_loans' %}">All Loans</a></li>
                 <li><a href="#why-us">About Us</a></li>
                 <li><a href="#contact">Contact</a></li>
+                {% if user.is_authenticated %}
+                <li class="user-menu">
+                    <button class="user-menu-btn">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                    <div class="user-menu-dropdown">
+                        <a href="{% url 'account' %}">
+                            <i class="fas fa-user"></i> My Account
+                        </a>
+                        <a href="#">
+                            <i class="fas fa-tasks"></i> Loan Status
+                        </a>
+                        <a href="#">
+                            <i class="fas fa-file-alt"></i> Fill Form
+                        </a>
+                        <a href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </li>
+                {% else %}
                 <li><a href="{% url 'login' %}" class="nav-cta">Log in</a></li>
+                {% endif %}
             </ul>
         </div>
     </nav>
@@ -171,6 +236,33 @@
                     link.classList.add('active');
                 }
             });
+        });
+
+        // Add this to your existing scripts
+        document.addEventListener('DOMContentLoaded', function() {
+            const userMenuBtn = document.querySelector('.user-menu-btn');
+            const userMenuDropdown = document.querySelector('.user-menu-dropdown');
+
+            if (userMenuBtn) {
+                userMenuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Check if mobile view (screen width less than 768px)
+                    if (window.innerWidth < 768) {
+                        // Redirect to account page on mobile
+                        window.location.href = "{% url 'account' %}";
+                    } else {
+                        // Show dropdown on desktop
+                        userMenuDropdown.classList.toggle('active');
+                    }
+                });
+
+                // Close dropdown when clicking outside (desktop only)
+                document.addEventListener('click', (e) => {
+                    if (window.innerWidth >= 768 && !userMenuDropdown.contains(e.target)) {
+                        userMenuDropdown.classList.remove('active');
+                    }
+                });
+            }
         });
     </script>
 {% block js %}

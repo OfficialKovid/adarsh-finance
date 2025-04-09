@@ -2,9 +2,14 @@
 {% load static %}
 {% block title %}AdarshFinance - Financial Solutions{% endblock %}
 {% block head %}
-
 <link rel="stylesheet" href="{% static '/style.css' %}">
 <style>
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+        position: relative;
+    }
+
     .hero {
         height: 100vh;
         width: 100%;
@@ -20,8 +25,52 @@
         color: white;
         padding-top: 80px;
     }
+
+    /* Fix potential overflow issues in sections */
+    .services,
+    .why-us,
+    .contact-section {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Ensure grids don't cause overflow */
+    .services-grid,
+    .features-grid {
+        width: 100%;
+        margin: 0 auto;
+        padding: 0 15px;
+        box-sizing: border-box;
+    }
+
+    /* Make cards responsive */
+    .service-card,
+    .feature-card {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Ensure form elements don't overflow */
+    .contact-wrapper {
+        width: 100%;
+        max-width: 100%;
+        padding: 0 15px;
+        box-sizing: border-box;
+    }
+
+    @media screen and (max-width: 768px) {
+        .services-grid,
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .contact-wrapper {
+            flex-direction: column;
+        }
+    }
 </style>
-    {% endblock %}
+{% endblock %}
 
 {% block content %}
 

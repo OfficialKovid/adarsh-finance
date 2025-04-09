@@ -1,108 +1,290 @@
-{% extends 'accounts/base.html' %}
+{% extends 'base/base-website.html' %}
 {% load static %}
-{% block title %} My Account {% endblock %}
-{% block css %}
+
+{% block title %}My Account - AdarshFinance{% endblock %}
+
+{% block head %}
 <style>
-.account-info {
-    width: 380px;
-    padding: 30px;
-    background: linear-gradient(145deg, #ffffff, #f5f5f5);
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    text-align: left;
-    transition: transform 0.3s ease;
-}
+    /* Add these fixes at the top */
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+        position: relative;
+    }
 
-.account-info:hover {
-    transform: translateY(-5px);
-}
+    .account-section {
+        min-height: 100vh;
+        background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(245,247,250,0.95));
+        padding: 120px 0 50px;
+        width: 100%;
+        overflow-x: hidden;
+    }
 
-.account-info h2 {
-    margin-bottom: 25px;
-    color: #2c3e50;
-    font-size: 28px;
-    font-weight: 600;
-    text-align: center;
-}
+    .account-container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+        box-sizing: border-box;
+    }
 
-.info-item {
-    margin-bottom: 20px;
-    padding: 12px;
-    background-color: #f8f9fa;
-    border-radius: 10px;
-    color: #495057;
-    font-size: 16px;
-}
+    .account-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
 
-.info-item strong {
-    color: #2c3e50;
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
+    .account-header h1 {
+        color: #1e3c72;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
 
-.btn-group {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 30px;
-    padding: 0 10px;
-}
+    .status-bar,
+    .status-grid,
+    .status-item {
+        display: none;
+    }
 
-.btn {
-    display: inline-block;
-    padding: 12px 28px;
-    border: none;
-    border-radius: 25px;
-    color: #fff;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 14px;
-}
+    .main-content {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 30px;
+    }
 
-.btn-orders {
-    background-color: #3498db;
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
-}
+    .profile-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
 
-.btn-orders:hover {
-    background-color: #2980b9;
-    transform: translateY(-2px);
-}
+    .profile-card h2 {
+        color: #1e3c72;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+    }
 
-.btn-logout {
-    background-color: #e74c3c;
-    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.2);
-}
+    .info-item {
+        margin-bottom: 20px;
+    }
 
-.btn-logout:hover {
-    background-color: #c0392b;
-    transform: translateY(-2px);
-}
+    .info-item label {
+        display: block;
+        color: #666;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+    }
+
+    .info-item p {
+        color: #333;
+        font-size: 1.1rem;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .timeline-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .timeline {
+        position: relative;
+        padding: 30px 0;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 20px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 60px;
+        margin-bottom: 30px;
+    }
+
+    .timeline-dot {
+        position: absolute;
+        left: 16px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #1e3c72;
+    }
+
+    .timeline-dot.active {
+        box-shadow: 0 0 0 4px rgba(30,60,114,0.2);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: #1e3c72;
+        color: white;
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #1e3c72;
+        border: 2px solid #1e3c72;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    @media (min-width: 993px) {
+        [data-aos] {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+        
+        [data-aos].aos-animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 992px) {
+        [data-aos] {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+        }
+
+        .main-content {
+            grid-template-columns: 1fr;
+            width: 100%;
+            padding: 0;
+            gap: 20px;  /* Reduced gap for mobile */
+        }
+        
+        .profile-card,
+        .timeline-card {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0;
+            visibility: visible !important;  /* Ensure visibility */
+            opacity: 1 !important;  /* Ensure opacity */
+            transform: none !important;  /* Remove any transforms */
+        }
+
+        .timeline-card {
+            margin-top: -10px;  /* Pull the timeline card up slightly */
+        }
+
+        .action-buttons {
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .account-header h1 {
+            font-size: 2rem;
+        }
+
+        .account-section {
+            padding: 100px 0 30px;  /* Reduced padding */
+        }
+
+        .account-container {
+            padding: 0 10px;
+        }
+    }
 </style>
 {% endblock %}
 
-{% block body %}
-<div style="height: 90vh; display: flex; justify-content: center; align-items: center; background-color: #f8f9fa;">
-    <div class="account-info">
-        <h2>Account Information</h2>
-        <div class="info-item">
-            <strong>Username</strong>
-            {{request.user}}
+{% block content %}
+<section class="account-section">
+    <div class="account-container">
+        <div class="account-header" data-aos="fade-down">
+            <h1>Welcome Back, {{ user.first_name }}!</h1>
+            <p>Manage your loan application and track its progress</p>
         </div>
-        <div class="info-item">
-            <strong>Email</strong>
-            {{request.user.email}}
-        </div>
-        <div class="btn-group">
-            <a href="/my-bookings/" class="btn btn-orders">My bookings</a>
-            <a href="/logout/" class="btn btn-logout">Logout</a>
+
+        <div class="main-content">
+            <div class="profile-card" data-aos="fade-right">
+                <h2>Personal Information</h2>
+                <div class="info-item">
+                    <label>Full Name</label>
+                    <p>{{ user.first_name }} {{ user.last_name }}</p>
+                </div>
+                <div class="info-item">
+                    <label>Email Address</label>
+                    <p>{{ user.email }}</p>
+                </div>
+                <div class="info-item">
+                    <label>Phone Number</label>
+                    <p>{{ user.phone_number }}</p>
+                </div>
+                
+                <div class="action-buttons">
+                    <a href="{% url 'logout' %}" class="btn btn-danger">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+
+            <div class="timeline-card" data-aos="fade-up" data-aos-delay="200">
+                <h2>Application Progress</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-dot active"></div>
+                        <h3>Application Submitted</h3>
+                        <p>Your application has been received and is being processed</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot {% if status == 'verified' %}active{% endif %}"></div>
+                        <h3>Document Verification</h3>
+                        <p>Our team is reviewing your submitted documents</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot {% if status == 'approved' %}active{% endif %}"></div>
+                        <h3>Final Approval</h3>
+                        <p>Final review and decision making</p>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="#" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Track Application
+                    </a>
+                    <a href="#" class="btn btn-outline">
+                        <i class="fas fa-headset"></i> Contact Support
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+</section>
 {% endblock %}
