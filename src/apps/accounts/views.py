@@ -3,6 +3,7 @@ from .models import MyUser
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from apps.loan.models import LoanApplication
 
 def signup(request):
     if request.user.is_authenticated:
@@ -11,12 +12,10 @@ def signup(request):
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
-        first_name = request.POST.get("firstName")
-        last_name = request.POST.get("lastName")
-        phone_number = request.POST.get("phone")
+        reference_number = request.POST.get("reference_number")
         
-        # Validate required fields
-        if not all([email, password, first_name, last_name, phone_number]):
+        # Validate email and password
+        if not all([email, password, reference_number]):
             messages.error(request, 'All fields are required')
             return redirect('signup')
             
@@ -25,20 +24,31 @@ def signup(request):
             messages.error(request, 'Email already exists')
             return redirect('signup')
             
-        # Create new user
+        # Fetch application details
+        application = LoanApplication.get_by_reference(reference_number)
+        if not application:
+            messages.error(request, 'Invalid reference number')
+            return redirect('signup')
+            
+        # Create new user with application details
         try:
             user = MyUser.objects.create_user(
                 email=email, 
                 password=password,
-                first_name=first_name,
-                last_name=last_name,
-                phone_number=phone_number
+                first_name=application.name.split()[0],
+                last_name=application.name.split()[-1] if len(application.name.split()) > 1 else "",
+                phone_number=application.phone_number
             )
-            # Automatically log in the user after signup
+            
+            # Mark the reference number as used
+            application.is_registered = True
+            application.save()
+            
+            # Automatically log in the user
             user = authenticate(request, email=email, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('account')  # Redirect to account page after successful signup
+                return redirect('account')
             else:
                 messages.success(request, 'Account created successfully. Please login.')
                 return redirect('login')

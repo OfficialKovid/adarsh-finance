@@ -111,6 +111,7 @@
             <table class="applications-table">
                 <thead>
                     <tr>
+                        <th>Reference No.</th>
                         <th>Date</th>
                         <th>Name</th>
                         <th>Phone</th>
@@ -122,6 +123,7 @@
                 <tbody>
                     {% for app in applications %}
                     <tr>
+                        <td>{{ app.reference_number }}</td>
                         <td>{{ app.applied_at|date:"M d, Y H:i" }}</td>
                         <td>{{ app.name }}</td>
                         <td>{{ app.phone_number }}</td>
