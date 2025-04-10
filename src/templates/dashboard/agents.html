@@ -223,11 +223,57 @@
 
     // Search and filter functionality
     document.getElementById('agentSearch').addEventListener('input', function(e) {
-        // Implement search functionality
+        const searchValue = e.target.value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value;
+        filterAgents(searchValue, statusFilter);
     });
 
     document.getElementById('statusFilter').addEventListener('change', function(e) {
-        // Implement filter functionality
+        const searchValue = document.getElementById('agentSearch').value.toLowerCase();
+        const statusFilter = e.target.value;
+        filterAgents(searchValue, statusFilter);
     });
+
+    function filterAgents(search, status) {
+        const rows = document.querySelectorAll('tbody tr:not(.no-results)');  // Exclude no-results row from selection
+        let hasVisibleRows = false;
+        
+        rows.forEach(row => {
+            const agentName = row.querySelector('td:first-child').textContent.toLowerCase();
+            const agentEmail = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+            const agentStatus = row.querySelector('.status-badge').textContent.toLowerCase();
+            
+            const matchesSearch = !search || 
+                agentName.includes(search) || 
+                agentEmail.includes(search);
+            
+            const matchesStatus = status === 'all' || 
+                (status === 'active' && agentStatus.includes('active')) ||
+                (status === 'inactive' && agentStatus.includes('inactive'));
+
+            const shouldDisplay = matchesSearch && matchesStatus;
+            row.style.display = shouldDisplay ? '' : 'none';
+            if (shouldDisplay) {
+                hasVisibleRows = true;
+            }
+        });
+
+        // Handle the "No agents found" message
+        const tbody = document.querySelector('tbody');
+        let noResultsRow = tbody.querySelector('.no-results');
+        
+        // Remove existing "No agents found" message if it exists
+        if (noResultsRow) {
+            noResultsRow.remove();
+        }
+        
+        // Add "No agents found" message only if there are no visible rows
+        if (!hasVisibleRows) {
+            noResultsRow = document.createElement('tr');
+            noResultsRow.className = 'no-results';
+            noResultsRow.innerHTML = '<td colspan="5" style="padding: 20px; text-align: center;">No agents found</td>';
+            tbody.appendChild(noResultsRow);
+        }
+    }
 </script>
 {% endblock %}
