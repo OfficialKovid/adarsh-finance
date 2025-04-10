@@ -5,6 +5,7 @@ from apps.accounts.views import agent_required, manager_required
 from django.contrib.auth import get_user_model
 from apps.loan.models import LoanApplication
 from django.db.models import Count, Avg, Case, When, FloatField
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 def dashboard(request):
     if request.user.is_authenticated:
@@ -102,35 +103,59 @@ def toggle_agent_status(request, agent_id):
 
 @login_required(login_url='/dashboard/staff-login/')
 @manager_required
+@ensure_csrf_cookie
 def add_agent(request):
-    if request.method == 'POST':
-        User = get_user_model()
-        try:
-            user = User.objects.create_user(
-                email=request.POST['email'],
-                password=request.POST['password'],
-                first_name=request.POST['first_name'],
-                last_name=request.POST['last_name'],
-                phone_number=request.POST['phone_number'],
-                role='AGENT'
-            )
-            return JsonResponse({
-                'status': 'success',
-                'message': 'Agent created successfully',
-                'agent': {
-                    'id': user.id,
-                    'name': user.get_full_name(),
-                    'email': user.email,
-                    'phone_number': user.phone_number,
-                    'is_active': user.is_active
-                }
-            })
-        except Exception as e:
+    if request.method != 'POST':
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Invalid request method'
+        }, status=405)
+
+    try:
+        data = request.POST
+        required_fields = ['email', 'password', 'first_name', 'last_name', 'phone_number']
+        
+        # Check if all required fields are present
+        missing_fields = [field for field in required_fields if not data.get(field)]
+        if missing_fields:
             return JsonResponse({
                 'status': 'error',
-                'message': str(e)
-            })
-    return JsonResponse({
-        'status': 'error',
-        'message': 'Invalid request method'
-    })
+                'message': f'Missing required fields: {", ".join(missing_fields)}'
+            }, status=400)
+        
+        User = get_user_model()
+        
+        # Check if email already exists
+        if User.objects.filter(email=data['email']).exists():
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Email already exists'
+            }, status=400)
+        
+        # Create new agent
+        agent = User.objects.create_user(
+            email=data['email'],
+            password=data['password'],
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            phone_number=data['phone_number'],
+            role='AGENT',
+            is_active=True
+        )
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Agent created successfully',
+            'agent': {
+                'id': agent.id,
+                'name': agent.get_full_name(),
+                'email': agent.email,
+                'phone_number': agent.phone_number
+            }
+        }, status=201)
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)

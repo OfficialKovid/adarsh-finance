@@ -57,7 +57,6 @@
                         <th style="padding: 12px; text-align: center;">Applications</th>
                         <th style="padding: 12px; text-align: center;">Success Rate</th>
                         <th style="padding: 12px; text-align: center;">Status</th>
-                        <th style="padding: 12px; text-align: center;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -89,23 +88,49 @@
                                 {{ agent.is_active|yesno:"Active,Inactive" }}
                             </span>
                         </td>
-                        <td style="padding: 12px; text-align: center;">
-                            <button class="action-btn" onclick="editAgent({{ agent.id }})">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="action-btn" onclick="toggleAgentStatus({{ agent.id }})">
-                                <i class="fas {% if agent.is_active %}fa-ban{% else %}fa-check{% endif %}"></i>
-                            </button>
-                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" style="padding: 20px; text-align: center;">No agents found</td>
+                        <td colspan="5" style="padding: 20px; text-align: center;">No agents found</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+    </div>
+</div>
+
+<!-- Add Agent Modal -->
+<div id="addAgentModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div class="modal-content" style="background: white; width: 90%; max-width: 500px; margin: 50px auto; padding: 20px; border-radius: 8px;">
+        <h2>Add New Agent</h2>
+        <form id="addAgentForm" onsubmit="handleAddAgent(event)">
+            {% csrf_token %}
+            <div style="margin-bottom: 15px;">
+                <label>First Name</label>
+                <input type="text" name="first_name" required style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label>Last Name</label>
+                <input type="text" name="last_name" required style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label>Email</label>
+                <input type="email" name="email" required style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label>Phone Number</label>
+                <input type="tel" name="phone_number" required style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label>Password</label>
+                <input type="password" name="password" required style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button type="button" onclick="closeAddAgentModal()" class="action-btn" style="background: #ccc;">Cancel</button>
+                <button type="submit" class="action-btn btn-primary">Add Agent</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -139,18 +164,61 @@
 
 <script>
     function showAddAgentModal() {
-        // Implement add agent modal functionality
-        alert('Add agent modal to be implemented');
+        document.getElementById('addAgentModal').style.display = 'block';
     }
 
-    function editAgent(agentId) {
-        // Implement edit agent functionality
-        alert('Edit agent ' + agentId + ' to be implemented');
+    function closeAddAgentModal() {
+        document.getElementById('addAgentModal').style.display = 'none';
+        document.getElementById('addAgentForm').reset();
     }
 
-    function toggleAgentStatus(agentId) {
-        // Implement toggle agent status functionality
-        alert('Toggle status for agent ' + agentId + ' to be implemented');
+    async function handleAddAgent(event) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch("{% url 'dashboard:add-agent' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                credentials: 'same-origin'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (data.status === 'success') {
+                alert('Agent added successfully!');
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error adding agent: ' + error.message);
+        }
+        closeAddAgentModal();
+    }
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
 
     // Search and filter functionality
