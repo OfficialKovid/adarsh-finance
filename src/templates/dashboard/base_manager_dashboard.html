@@ -226,25 +226,25 @@
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="{% url 'dashboard:manager-dashboard' %}" class="nav-link active">
+                    <a href="{% url 'dashboard:manager-dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'manager-dashboard' %}active{% endif %}">
                         <i class="fas fa-chart-line"></i>
                         Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'applications_list' %}" class="nav-link">
+                    <a href="{% url 'applications_list' %}" class="nav-link {% if request.resolver_match.url_name == 'applications_list' %}active{% endif %}">
                         <i class="fas fa-file-invoice"></i>
                         Loan Applications
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'manage_schemes' %}" class="nav-link">
+                    <a href="{% url 'manage_schemes' %}" class="nav-link {% if request.resolver_match.url_name == 'manage_schemes' %}active{% endif %}">
                         <i class="fas fa-piggy-bank"></i>
                         Manage Schemes      
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'dashboard:agents-management' %}" class="nav-link">
+                    <a href="{% url 'dashboard:agents-management' %}" class="nav-link {% if request.resolver_match.url_name == 'agents-management' %}active{% endif %}">
                         <i class="fas fa-users"></i>
                         Agents
                     </a>
