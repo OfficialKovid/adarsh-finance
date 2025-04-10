@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.utils.text import slugify
+from django.conf import settings
 
 class LoanScheme(models.Model):
     title = models.CharField(max_length=255)
@@ -87,15 +88,26 @@ class LoanApplication(models.Model):
     status = models.CharField(
         max_length=20,
         choices=[
-            ('pending', 'Pending'),
-            ('contacted', 'Contacted'),
-            ('completed', 'Completed'),
-            ('cancelled', 'Cancelled')
+            ('new_lead', 'New Lead'),
+            ('not_converted', 'Not Converted'),
+            ('assigned', 'Assigned'),
+            ('detail_collection', 'Detail Collection'),
+            ('form_filled', 'Form Filled'),
+            ('under_review', 'Under Review'),
+            ('closed', 'Closed'),
+            ('dropped', 'Dropped')  # Added new status
         ],
-        default='pending'
+        default='new_lead'
     )
     notes = models.TextField(blank=True, null=True)
     is_registered = models.BooleanField(default=False)  # Add this field
+    assigned_agent = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_applications'
+    )
 
     class Meta:
         ordering = ['-applied_at']
@@ -116,6 +128,13 @@ class LoanApplication(models.Model):
             return application
         except cls.DoesNotExist:
             return None
+
+    @classmethod
+    def get_status_choices(cls):
+        return [
+            {'value': choice[0], 'label': choice[1]} 
+            for choice in cls._meta.get_field('status').choices
+        ]
 
     def __str__(self):
         return f"{self.name} - {self.scheme.title}"

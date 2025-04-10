@@ -1,0 +1,165 @@
+{% extends 'dashboard/base_manager_dashboard.html' %}
+
+{% block header_text %}
+<h1>Agent Management</h1>
+<p>Manage and monitor your team of agents</p>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>Total Agents</h3>
+        <div class="stat-value">{{ agents.count }}</div>
+    </div>
+    <div class="stat-card">
+        <h3>Active Agents</h3>
+        <div class="stat-value">{{ active_agents }}</div>
+    </div>
+    <div class="stat-card">
+        <h3>Applications Handled</h3>
+        <div class="stat-value">{{ total_applications }}</div>
+    </div>
+    <div class="stat-card">
+        <h3>Success Rate</h3>
+        <div class="stat-value">{{ success_rate }}%</div>
+    </div>
+</div>
+
+<!-- Agent Management Section -->
+<div class="content-grid" style="grid-template-columns: 1fr;">
+    <div class="content-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Agent List</h2>
+            <button class="action-btn btn-primary" onclick="showAddAgentModal()">
+                <i class="fas fa-plus"></i> Add New Agent
+            </button>
+        </div>
+
+        <!-- Agent Search and Filter -->
+        <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+            <input type="text" id="agentSearch" placeholder="Search agents..." 
+                   style="padding: 8px; border: 1px solid #ddd; border-radius: 5px; flex: 1;">
+            <select id="statusFilter" style="padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </div>
+
+        <!-- Agents Table -->
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: var(--primary-color); color: white;">
+                        <th style="padding: 12px; text-align: left;">Agent</th>
+                        <th style="padding: 12px; text-align: left;">Contact</th>
+                        <th style="padding: 12px; text-align: center;">Applications</th>
+                        <th style="padding: 12px; text-align: center;">Success Rate</th>
+                        <th style="padding: 12px; text-align: center;">Status</th>
+                        <th style="padding: 12px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for agent in agents %}
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-user-circle" style="font-size: 24px; color: var(--secondary-color);"></i>
+                                <div>
+                                    <div style="font-weight: bold;">{{ agent.get_full_name }}</div>
+                                    <div style="font-size: 12px; color: #666;">ID: {{ agent.id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="padding: 12px;">
+                            <div>{{ agent.email }}</div>
+                            <div style="font-size: 12px; color: #666;">{{ agent.phone_number }}</div>
+                        </td>
+                        <td style="padding: 12px; text-align: center;">
+                            <div style="font-weight: bold;">{{ agent.assigned_applications.count }}</div>
+                            <div style="font-size: 12px; color: #666;">Total Cases</div>
+                        </td>
+                        <td style="padding: 12px; text-align: center;">
+                            <div style="font-weight: bold;">{{ agent.success_rate|default:"0" }}%</div>
+                            <div style="font-size: 12px; color: #666;">Conversion</div>
+                        </td>
+                        <td style="padding: 12px; text-align: center;">
+                            <span class="status-badge {% if agent.is_active %}success{% else %}warning{% endif %}">
+                                {{ agent.is_active|yesno:"Active,Inactive" }}
+                            </span>
+                        </td>
+                        <td style="padding: 12px; text-align: center;">
+                            <button class="action-btn" onclick="editAgent({{ agent.id }})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn" onclick="toggleAgentStatus({{ agent.id }})">
+                                <i class="fas {% if agent.is_active %}fa-ban{% else %}fa-check{% endif %}"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="padding: 20px; text-align: center;">No agents found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .status-badge.success {
+        background: var(--success-color);
+        color: white;
+    }
+    .status-badge.warning {
+        background: var(--warning-color);
+        color: white;
+    }
+    .action-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 0 4px;
+        transition: all 0.3s;
+    }
+    .action-btn:hover {
+        opacity: 0.8;
+    }
+</style>
+
+<script>
+    function showAddAgentModal() {
+        // Implement add agent modal functionality
+        alert('Add agent modal to be implemented');
+    }
+
+    function editAgent(agentId) {
+        // Implement edit agent functionality
+        alert('Edit agent ' + agentId + ' to be implemented');
+    }
+
+    function toggleAgentStatus(agentId) {
+        // Implement toggle agent status functionality
+        alert('Toggle status for agent ' + agentId + ' to be implemented');
+    }
+
+    // Search and filter functionality
+    document.getElementById('agentSearch').addEventListener('input', function(e) {
+        // Implement search functionality
+    });
+
+    document.getElementById('statusFilter').addEventListener('change', function(e) {
+        // Implement filter functionality
+    });
+</script>
+{% endblock %}

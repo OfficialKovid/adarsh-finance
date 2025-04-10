@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apps.contact.apps.ContactConfig',
     'apps.home.apps.HomeConfig',
     'apps.loan.apps.LoanConfig',
+    'apps.dashboard.apps.DashboardConfig',
 ]
 
 

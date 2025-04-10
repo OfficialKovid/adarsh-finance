@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - AdarshFinance</title>
-    <!-- Font Awesome -->
+    <title>Staff Login -Adarsh financee</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * {
@@ -38,11 +37,10 @@
             box-shadow: 0 15px 30px rgba(0,0,0,0.1);
         }
 
-        /* Left Side - Image */
         .login-image {
             flex: 1;
-            background: linear-gradient(rgba(52, 152, 219, 0.8), rgba(44, 62, 80, 0.9)),
-                        url('https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?ixlib=rb-4.0.3') center/cover;
+            background: linear-gradient(rgba(44, 62, 80, 0.95), rgba(52, 152, 219, 0.85)),
+                        url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3') center/cover;
             padding: 40px;
             display: flex;
             flex-direction: column;
@@ -53,6 +51,18 @@
         .brand {
             font-size: 24px;
             font-weight: 700;
+        }
+
+        .brand a {
+            text-decoration: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand i {
+            font-size: 28px;
         }
 
         .brand span {
@@ -74,7 +84,6 @@
             line-height: 1.6;
         }
 
-        /* Right Side - Form */
         .login-form-container {
             flex: 1;
             padding: 60px 40px;
@@ -95,6 +104,15 @@
 
         .login-header p {
             color: #666;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
 
         .form-group {
@@ -130,24 +148,13 @@
         }
 
         .form-control:focus {
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
             outline: none;
         }
 
-        .forgot-password {
-            text-align: right;
-            margin-bottom: 25px;
-        }
-
-        .forgot-password a {
-            color: var(--secondary-color);
-            text-decoration: none;
-            font-size: 14px;
-        }
-
         .login-button {
-            background: var(--secondary-color);
+            background: var(--primary-color);
             color: white;
             padding: 15px;
             border: none;
@@ -160,77 +167,28 @@
         }
 
         .login-button:hover {
-            background: #2980b9;
+            background: #234567;
             transform: translateY(-2px);
         }
 
-        .social-login {
-            margin-top: 40px;
-            text-align: center;
-        }
-
-        .social-login p {
-            color: #666;
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .social-login p::before,
-        .social-login p::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            width: 45%;
-            height: 1px;
-            background: #ddd;
-        }
-
-        .social-login p::before {
-            left: 0;
-        }
-
-        .social-login p::after {
-            right: 0;
-        }
-
-        .social-icons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .social-icons a {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #ddd;
-            color: #666;
-            transition: all 0.3s ease;
-        }
-
-        .social-icons a:hover {
-            background: var(--secondary-color);
-            border-color: var(--secondary-color);
-            color: white;
-            transform: translateY(-3px);
-        }
-
-        .register-link {
+        .back-to-home {
             text-align: center;
             margin-top: 30px;
-            color: #666;
         }
 
-        .register-link a {
-            color: var(--secondary-color);
+        .back-to-home a {
+            color: var(--primary-color);
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        /* Responsive Design */
+        .back-to-home a:hover {
+            text-decoration: underline;
+        }
+
         @media (max-width: 968px) {
             .login-container {
                 flex-direction: column;
@@ -255,57 +213,42 @@
             .login-image {
                 padding: 40px 20px;
             }
-
-            .social-login p::before,
-            .social-login p::after {
-                width: 35%;
-            }
-        }
-
-        .brand a {
-            text-decoration: none;
-            color: white;
-        }
-
-        .brand a:hover {
-            opacity: 0.9;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <!-- Left Side - Image -->
         <div class="login-image">
             <div class="brand">
-                <a href="../index.html">
-                    Loan<span>Pro</span>
+                <a href="/">
+                    <i class="fas fa-shield-alt"></i>
+                    Adarsh<span>Finance</span> Staff Portal
                 </a>
             </div>
             <div class="image-text">
-                <h2>Welcome Back!</h2>
-                <p>Access your account to manage your loans, track payments, and explore new financial opportunities.</p>
+                <h2>Staff Access Only</h2>
+                <p>Welcome to the administrative portal. Please login with your authorized credentials to access the dashboard and manage loan applications.</p>
             </div>
         </div>
 
-        <!-- Right Side - Form -->
         <div class="login-form-container">
             <div class="login-header">
-                <h2>Sign In</h2>
-                <p>Please login to continue</p>
+                <h2>Staff Login</h2>
+                <p>Secure access for authorized personnel</p>
             </div>
 
             <form id="loginForm" method="POST">
                 {% csrf_token %}
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert alert-danger" role="alert">
+                        <div class="alert" role="alert">
                             {{ message }}
                         </div>
                     {% endfor %}
                 {% endif %}
 
                 <div class="form-group">
-                    <label for="email">Email Address</label>
+                    <label for="email">Staff Email</label>
                     <div class="input-group">
                         <i class="fas fa-envelope"></i>
                         <input type="email" id="email" name="email" class="form-control" required>
@@ -320,30 +263,13 @@
                     </div>
                 </div>
 
-                <button type="submit" class="login-button">Sign In</button>
+                <button type="submit" class="login-button">Access Dashboard</button>
             </form>
 
-            <div class="social-login">
-                <p>Or continue with</p>
-                <div class="social-icons">
-                    <a href="#"><i class="fab fa-google"></i></a>
-                    <a href="#"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#"><i class="fab fa-apple"></i></a>
-                </div>
-            </div>
-
-            <div class="register-link">
-                Don't have an account? <a href="{% url 'signup' %}">Register Now</a>
+            <div class="back-to-home">
+                <a href="/"><i class="fas fa-arrow-left"></i> Back to Home</a>
             </div>
         </div>
     </div>
-
-    <script>
-        // Remove the preventDefault() call to allow form submission
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            // Form will submit normally
-        });
-    </script>
 </body>
 </html>
-

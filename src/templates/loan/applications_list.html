@@ -1,64 +1,199 @@
-{% extends 'base/base-website.html' %}
-{% load static %}
+{% extends 'dashboard/base_manager_dashboard.html' %}
 
-{% block title %}Loan Applications - Admin{% endblock %}
+{% block title %}Loan Applications - Manager Dashboard{% endblock %}
 
-{% block head %}
+{% block header_text %}
+<h1>Loan Applications</h1>
+<p>Manage and track all loan applications</p>
+{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="search-box">
+        <form method="GET" action="." class="search-form" id="searchForm">
+            <div class="search-input-wrapper">
+                <input type="text" 
+                       name="search" 
+                       id="searchInput" 
+                       class="form-control" 
+                       placeholder="Search by name, phone, reference number, scheme or agent..."
+                       value="{{ search_query }}"
+                       autocomplete="off">
+                <div id="searchSuggestions" class="search-suggestions"></div>
+            </div>
+            <input type="hidden" name="section" value="{{ current_section }}">
+            <button type="submit" class="search-btn">Search</button>
+            {% if search_query %}
+                <a href="?section={{ current_section }}" class="clear-search">Clear</a>
+            {% endif %}
+        </form>
+        {% if search_query %}
+            <div class="search-results-info">
+                Found {{ search_count }} result{{ search_count|pluralize }} for "{{ search_query }}"
+            </div>
+        {% endif %}
+    </div>
+    <!-- Remove filters from top -->
+    <!-- Tabs -->
+    <div class="section-tabs">
+        <button class="tab-btn {% if current_section == 'all-applications' %}active{% endif %}" data-section="all-applications">
+            All Applications <span class="count">{{ all_applications }}</span>
+        </button>
+        <button class="tab-btn {% if current_section == 'new-leads' %}active{% endif %}" data-section="new-leads">
+            New Leads <span class="count">{{ new_leads }}</span>
+        </button>
+        <button class="tab-btn {% if current_section == 'processing' %}active{% endif %}" data-section="processing">
+            Processing <span class="count">{{ processing }}</span>
+        </button>
+        <button class="tab-btn {% if current_section == 'completed' %}active{% endif %}" data-section="completed">
+            Completed <span class="count">{{ completed }}</span>
+        </button>
+        <button class="tab-btn {% if current_section == 'rejected' %}active{% endif %}" data-section="rejected">
+            Rejected <span class="count">{{ rejected }}</span>
+        </button>
+    </div>
+
+    <!-- Section Tables -->
+    <div class="section-content">
+        <div id="all-applications" class="section {% if current_section == 'all-applications' %}active{% endif %}">
+            <h3>All Applications</h3>
+            <div class="section-filters">
+                <div class="filter-group">
+                    <label>Status:</label>
+                    <select class="form-select status-filter" data-section="all-applications">
+                        <option value="">All</option>
+                        {% for status in status_choices %}
+                        <option value="{{ status.value }}">{{ status.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Scheme:</label>
+                    <select class="form-select scheme-filter" data-section="all-applications">
+                        <option value="">All</option>
+                        {% for scheme in schemes %}
+                        <option value="{{ scheme.id }}">{{ scheme.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Agent:</label>
+                    <select class="form-select agent-filter" data-section="all-applications">
+                        <option value="">All</option>
+                        {% for agent in agents %}
+                        <option value="{{ agent.id }}">{{ agent.get_full_name|default:agent.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% include "loan/includes/applications_table.html" with applications=applications %}
+        </div>
+
+        <div id="new-leads" class="section {% if current_section == 'new-leads' %}active{% endif %}">
+            <h3>New Leads</h3>
+            <div class="section-filters">
+                <div class="filter-group">
+                    <label>Scheme:</label>
+                    <select class="form-select scheme-filter" data-section="new-leads">
+                        <option value="">All</option>
+                        {% for scheme in schemes %}
+                        <option value="{{ scheme.id }}">{{ scheme.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% include "loan/includes/applications_table.html" with applications=applications %}
+        </div>
+
+        <div id="processing" class="section {% if current_section == 'processing' %}active{% endif %}">
+            <h3>Processing Applications</h3>
+            <div class="section-filters">
+                <div class="filter-group">
+                    <label>Status:</label>
+                    <select class="form-select status-filter" data-section="processing">
+                        <option value="">All</option>
+                        <option value="assigned">Assigned</option>
+                        <option value="detail_collection">Detail Collection</option>
+                        <option value="form_filled">Form Filled</option>
+                        <option value="under_review">Under Review</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Scheme:</label>
+                    <select class="form-select scheme-filter" data-section="processing">
+                        <option value="">All</option>
+                        {% for scheme in schemes %}
+                        <option value="{{ scheme.id }}">{{ scheme.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Agent:</label>
+                    <select class="form-select agent-filter" data-section="processing">
+                        <option value="">All</option>
+                        {% for agent in agents %}
+                        <option value="{{ agent.id }}">{{ agent.get_full_name|default:agent.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% include "loan/includes/applications_table.html" with applications=applications %}
+        </div>
+
+        <!-- Keep other sections as they are but add scheme filter -->
+        <div id="completed" class="section {% if current_section == 'completed' %}active{% endif %}">
+            <h3>Completed Applications</h3>
+            <div class="section-filters">
+                <div class="filter-group">
+                    <label>Scheme:</label>
+                    <select class="form-select scheme-filter" data-section="completed">
+                        <option value="">All</option>
+                        {% for scheme in schemes %}
+                        <option value="{{ scheme.id }}">{{ scheme.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Agent:</label>
+                    <select class="form-select agent-filter" data-section="completed">
+                        <option value="">All</option>
+                        {% for agent in agents %}
+                        <option value="{{ agent.id }}">{{ agent.get_full_name|default:agent.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% include "loan/includes/applications_table.html" with applications=applications %}
+        </div>
+
+        <div id="rejected" class="section {% if current_section == 'rejected' %}active{% endif %}">
+            <h3>Rejected Applications</h3>
+            <div class="section-filters">
+                <div class="filter-group">
+                    <label>Scheme:</label>
+                    <select class="form-select scheme-filter" data-section="rejected">
+                        <option value="">All</option>
+                        {% for scheme in schemes %}
+                        <option value="{{ scheme.id }}">{{ scheme.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Agent:</label>
+                    <select class="form-select agent-filter" data-section="rejected">
+                        <option value="">All</option>
+                        {% for agent in agents %}
+                        <option value="{{ agent.id }}">{{ agent.get_full_name|default:agent.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% include "loan/includes/applications_table.html" with applications=applications %}
+        </div>
+    </div>
+</div>
+
 <style>
-    .applications-section {
-        padding: 120px 0 80px;
-        background: #f8f9fa;
-    }
-
-    .applications-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-
-    .applications-table {
-        width: 100%;
-        background: white;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    }
-
-    .applications-table th {
-        background: #007bff;
-        color: white;
-        padding: 15px;
-        text-align: left;
-    }
-
-    .applications-table td {
-        padding: 15px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .applications-table tr:hover {
-        background: #f8f9fa;
-    }
-
-    .status-badge {
-        padding: 5px 10px;
-        border-radius: 15px;
-        font-size: 0.9em;
-    }
-
-    .status-pending { background: #ffeeba; color: #856404; }
-    .status-contacted { background: #b8daff; color: #004085; }
-    .status-completed { background: #c3e6cb; color: #155724; }
-    .status-cancelled { background: #f5c6cb; color: #721c24; }
-
-    .action-btn {
-        padding: 5px 10px;
-        border-radius: 5px;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-
     .filters {
         margin-bottom: 20px;
         display: flex;
@@ -72,129 +207,430 @@
         gap: 10px;
     }
 
-    .filter-group select {
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .data-table th {
+        background: var(--primary-color);
+        color: white;
+        text-align: left;
+    }
+
+    .data-table tr:hover {
+        background: rgba(52, 152, 219, 0.05);
+    }
+
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.9em;
+    }
+
+    .status-pending { background: #ffeeba; color: #856404; }
+    .status-contacted { background: #b8daff; color: #004085; }
+    .status-completed { background: #c3e6cb; color: #155724; }
+    .status-cancelled { background: #f5c6cb; color: #721c24; }
+    .status-new_lead { background: #b8daff; color: #004085; }
+    .status-not_converted { background: #f5c6cb; color: #721c24; }
+    .status-assigned { background: #d4edda; color: #155724; }
+    .status-detail_collection { background: #fff3cd; color: #856404; }
+    .status-form_filled { background: #d1ecf1; color: #0c5460; }
+    .status-under_review { background: #e2e3e5; color: #383d41; }
+    .status-closed { background: #c3c3c3; color: #1b1e21; }
+    .status-dropped { background: #6c757d; color: #fff; }  /* Add this line */
+
+    .form-select {
         padding: 8px;
         border-radius: 5px;
         border: 1px solid #ddd;
+        background: white;
+    }
+
+    .action-btn {
+        min-width: 120px;
+    }
+
+    .section-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+    }
+
+    .tab-btn {
+        padding: 8px 16px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 1em;
+        color: #666;
+        position: relative;
+    }
+
+    .tab-btn.active {
+        color: var(--primary-color);
+        font-weight: bold;
+    }
+
+    .tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -11px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: var(--primary-color);
+    }
+
+    .count {
+        background: #eee;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-size: 0.8em;
+        margin-left: 5px;
+    }
+
+    .section {
+        display: none;
+    }
+
+    .section.active {
+        display: block;
+    }
+
+    .section h3 {
+        margin-bottom: 15px;
+        color: #333;
+    }
+
+    .section-filters {
+        margin-bottom: 20px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
+
+    .search-box {
+        margin-bottom: 20px;
+    }
+    
+    .search-box input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+    
+    .highlight {
+        background-color: #fff3cd;
+    }
+
+    .search-form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .search-form input[type="text"] {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+    
+    .search-btn {
+        padding: 10px 20px;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    .clear-search {
+        padding: 10px 15px;
+        color: #666;
+        text-decoration: none;
+    }
+    
+    .clear-search:hover {
+        text-decoration: underline;
+    }
+    
+    .search-results-info {
+        margin-top: 10px;
+        padding: 10px;
+        background: #e9ecef;
+        border-radius: 5px;
+        color: #495057;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        flex: 1;
+    }
+    
+    .search-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 0 0 5px 5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        z-index: 1000;
+        display: none;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .suggestion-item {
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .suggestion-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .suggestion-item .main-text {
+        font-weight: bold;
+    }
+    
+    .suggestion-item .sub-text {
+        font-size: 0.9em;
+        color: #666;
     }
 </style>
-{% endblock %}
 
-{% block content %}
-<section class="applications-section">
-    <div class="applications-container">
-        <h2>Loan Applications</h2>
-        
-        <div class="filters">
-            <div class="filter-group">
-                <label>Status:</label>
-                <select id="statusFilter">
-                    <option value="">All</option>
-                    <option value="pending">Pending</option>
-                    <option value="contacted">Contacted</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Scheme:</label>
-                <select id="schemeFilter">
-                    <option value="">All</option>
-                    {% for scheme in schemes %}
-                    <option value="{{ scheme.id }}">{{ scheme.title }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-
-        <div class="table-responsive">
-            <table class="applications-table">
-                <thead>
-                    <tr>
-                        <th>Reference No.</th>
-                        <th>Date</th>
-                        <th>Name</th>
-                        <th>Phone</th>
-                        <th>Scheme</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for app in applications %}
-                    <tr>
-                        <td>{{ app.reference_number }}</td>
-                        <td>{{ app.applied_at|date:"M d, Y H:i" }}</td>
-                        <td>{{ app.name }}</td>
-                        <td>{{ app.phone_number }}</td>
-                        <td>{{ app.scheme.title }}</td>
-                        <td>
-                            <span class="status-badge status-{{ app.status }}">
-                                {{ app.status|title }}
-                            </span>
-                        </td>
-                        <td>
-                            <select class="action-btn" data-application-id="{{ app.id }}">
-                                <option value="">Update Status</option>
-                                <option value="pending" {% if app.status == 'pending' %}selected{% endif %}>Pending</option>
-                                <option value="contacted" {% if app.status == 'contacted' %}selected{% endif %}>Contacted</option>
-                                <option value="completed" {% if app.status == 'completed' %}selected{% endif %}>Completed</option>
-                                <option value="cancelled" {% if app.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
-                            </select>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</section>
-{% endblock %}
-
-{% block js %}
+{% block extra_js %}
 <script>
+    // Add this at the beginning of your JavaScript
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const searchText = e.target.value.toLowerCase();
+        const currentSection = document.querySelector('.section.active');
+        const rows = currentSection.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const match = text.includes(searchText);
+            row.style.display = match ? '' : 'none';
+            
+            // Remove existing highlights
+            row.querySelectorAll('.highlight').forEach(el => {
+                el.classList.remove('highlight');
+            });
+            
+            // Add highlights if there's search text
+            if (searchText && match) {
+                const cells = row.querySelectorAll('td');
+                cells.forEach(cell => {
+                    const content = cell.textContent;
+                    if (content.toLowerCase().includes(searchText)) {
+                        cell.classList.add('highlight');
+                    }
+                });
+            }
+        });
+    });
+
+    // Action button handler
     document.querySelectorAll('.action-btn').forEach(select => {
         select.addEventListener('change', function() {
             const applicationId = this.dataset.applicationId;
             const status = this.value;
+            const row = this.closest('tr');
             
             if (!status) return;
 
+            const formData = new FormData();
+            formData.append('status', status);
+            
             fetch(`/loans/applications/${applicationId}/update-status/`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
-                body: JSON.stringify({ status: status })
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Update the status badge without reloading
-                    const row = this.closest('tr');
+                    // Update the status badge
                     const statusBadge = row.querySelector('.status-badge');
                     statusBadge.className = `status-badge status-${status}`;
-                    statusBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+                    statusBadge.textContent = status.split('_').map(word => 
+                        word.charAt(0).toUpperCase() + word.slice(1)
+                    ).join(' ');
+                    
+                    // Reload the page after a short delay to update counts
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
                 } else {
                     alert('Error updating status');
+                    // Reset to previous value
+                    this.value = this.getAttribute('data-current-status') || '';
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 alert('Error updating status');
+                // Reset to previous value
+                this.value = this.getAttribute('data-current-status') || '';
             });
+
+            // Store current value for potential rollback
+            this.setAttribute('data-current-status', status);
         });
     });
 
-    // Filter functionality
-    document.getElementById('statusFilter').addEventListener('change', applyFilters);
-    document.getElementById('schemeFilter').addEventListener('change', applyFilters);
-
-    function applyFilters() {
-        const status = document.getElementById('statusFilter').value;
-        const scheme = document.getElementById('schemeFilter').value;
-        window.location.href = `/loans/applications/?status=${status}&scheme=${scheme}`;
+    // Simple function to update the URL and reload
+    function updateUrlAndReload(params) {
+        const url = new URL(window.location.href);
+        for (const [key, value] of Object.entries(params)) {
+            if (value) {
+                url.searchParams.set(key, value);
+            } else {
+                url.searchParams.delete(key);
+            }
+        }
+        window.location.href = url.toString();
     }
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const section = this.dataset.section;
+            updateUrlAndReload({ section: section, status: '', scheme: '', agent: '' });
+        });
+    });
+
+    // Filter handling
+    document.querySelectorAll('.status-filter, .scheme-filter, .agent-filter').forEach(filter => {
+        filter.addEventListener('change', function() {
+            const section = this.closest('.section').id;
+            const currentSection = document.querySelector('.section.active');
+            
+            const params = {
+                section: section,
+                status: currentSection.querySelector('.status-filter')?.value || '',
+                scheme: currentSection.querySelector('.scheme-filter')?.value || '',
+                agent: currentSection.querySelector('.agent-filter')?.value || ''
+            };
+            
+            updateUrlAndReload(params);
+        });
+    });
+
+    // Initialize filters from URL params
+    document.addEventListener('DOMContentLoaded', function() {
+        const params = new URLSearchParams(window.location.search);
+        const currentSection = params.get('section') || 'all-applications';
+        const status = params.get('status');
+        const scheme = params.get('scheme');
+        const agent = params.get('agent');
+
+        // Set active section and tab
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.remove('active');
+            if (section.id === currentSection) {
+                section.classList.add('active');
+            }
+        });
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.section === currentSection) {
+                btn.classList.add('active');
+            }
+        });
+
+        // Set filter values for active section only
+        const activeSection = document.getElementById(currentSection);
+        if (activeSection) {
+            if (status && activeSection.querySelector('.status-filter')) {
+                activeSection.querySelector('.status-filter').value = status;
+            }
+            if (scheme && activeSection.querySelector('.scheme-filter')) {
+                activeSection.querySelector('.scheme-filter').value = scheme;
+            }
+            if (agent && activeSection.querySelector('.agent-filter')) {
+                activeSection.querySelector('.agent-filter').value = agent;
+            }
+        }
+    });
+
+    // Add this to your existing JavaScript
+    let debounceTimer;
+    
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        clearTimeout(debounceTimer);
+        const query = e.target.value.trim();
+        
+        if (query.length < 2) {
+            document.getElementById('searchSuggestions').style.display = 'none';
+            return;
+        }
+        
+        debounceTimer = setTimeout(() => {
+            fetch(`/loans/search-suggestions/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const suggestionsDiv = document.getElementById('searchSuggestions');
+                    suggestionsDiv.innerHTML = '';
+                    
+                    if (data.suggestions.length > 0) {
+                        data.suggestions.forEach(suggestion => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.innerHTML = `
+                                <div class="main-text">${suggestion.text}</div>
+                                <div class="sub-text">Ref: ${suggestion.reference}</div>
+                            `;
+                            div.addEventListener('click', () => {
+                                // Update input with reference number instead of full text
+                                document.getElementById('searchInput').value = suggestion.reference;
+                                document.getElementById('searchSuggestions').style.display = 'none';
+                                // Submit form with a small delay
+                                setTimeout(() => {
+                                    document.getElementById('searchForm').submit();
+                                }, 100);
+                            });
+                            suggestionsDiv.appendChild(div);
+                        });
+                        suggestionsDiv.style.display = 'block';
+                    } else {
+                        suggestionsDiv.style.display = 'none';
+                    }
+                });
+        }, 300);
+    });
+    
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-input-wrapper')) {
+            document.getElementById('searchSuggestions').style.display = 'none';
+        }
+    });
+    
+    // ...existing script...
 </script>
+{% endblock %}
 {% endblock %}

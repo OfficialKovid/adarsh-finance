@@ -2,7 +2,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.db import transaction
+from django.contrib import messages
 from .models import LoanScheme, Benefit, EligibilityCriteria, RequiredDocument, CoveredSector, KeyPoint, LoanApplication
+from django.contrib.auth import get_user_model
+from django.db.models import Q, Value
+from django.db.models.functions import Concat
+import json, logging
+
+logger = logging.getLogger(__name__)
 
 def list_loans(request):
     loans = LoanScheme.objects.filter(is_active=True).prefetch_related(
@@ -11,11 +19,11 @@ def list_loans(request):
     )
     return render(request, 'loan/list_loans.html', {'loans': loans})
 
-def is_staff_user(user):
-    return user.is_staff
+def is_manager_user(user):
+    return user.role == 'MANAGER'  # Use the role field from MyUser model
 
-@login_required
-@user_passes_test(is_staff_user)
+@login_required(login_url='dashboard/staff-login/')
+@user_passes_test(is_manager_user, login_url='dashboard/staff-login/')
 def add_new_loan(request):
     if request.method == 'POST':
         # Create new loan scheme
@@ -97,40 +105,217 @@ def apply_loan(request, slug):
         application = LoanApplication.objects.create(
             name=request.POST['name'],
             phone_number=request.POST['phone_number'],
-            scheme=loan
+            scheme=loan,
+            status='new_lead'  # Explicitly set status to new_lead
         )
         return JsonResponse({'status': 'success'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)})
 
-@login_required
-@user_passes_test(is_staff_user)
+@login_required(login_url='/dashboard/staff-login/')
+@user_passes_test(is_manager_user, login_url='/dashboard/staff-login/')
 def applications_list(request):
-    applications = LoanApplication.objects.select_related('scheme').all()
+    # Get base queryset
+    base_applications = LoanApplication.objects.select_related('scheme', 'assigned_agent')
     
-    # Apply filters
+    # Get search and filter parameters
+    search_query = request.GET.get('search', '').strip()
+    section = request.GET.get('section', 'all-applications')
     status = request.GET.get('status')
     scheme = request.GET.get('scheme')
+    agent = request.GET.get('agent')
     
+    # Apply search if provided
+    if search_query:
+        base_applications = base_applications.filter(
+            Q(name__icontains=search_query) |
+            Q(phone_number__icontains=search_query) |
+            Q(reference_number__icontains=search_query) |
+            Q(scheme__title__icontains=search_query) |
+            Q(assigned_agent__first_name__icontains=search_query) |
+            Q(assigned_agent__last_name__icontains=search_query)
+        )
+    
+    # First, apply section-specific filtering
+    if section == 'new-leads':
+        applications = base_applications.filter(status='new_lead')
+    elif section == 'processing':
+        applications = base_applications.filter(status__in=['assigned', 'detail_collection', 'form_filled', 'under_review'])
+    elif section == 'completed':
+        applications = base_applications.filter(status='closed')
+    elif section == 'rejected':
+        applications = base_applications.filter(status='Rejected')  # Changed this line
+    else:  # all-applications
+        applications = base_applications.all()
+
+    # Then apply additional filters
     if status:
         applications = applications.filter(status=status)
     if scheme:
         applications = applications.filter(scheme_id=scheme)
+    if agent:
+        applications = applications.filter(assigned_agent_id=agent)
         
+    # Get all agents
+    agents = get_user_model().objects.filter(role='AGENT')
+    
+    # Prepare unfiltered counts for each section
+    unfiltered_applications = LoanApplication.objects.all()
+    
     context = {
         'applications': applications,
-        'schemes': LoanScheme.objects.all()
+        'all_applications': unfiltered_applications.count(),
+        'new_leads': unfiltered_applications.filter(status='new_lead').count(),
+        'processing': unfiltered_applications.filter(
+            status__in=['assigned', 'detail_collection', 'form_filled', 'under_review']
+        ).count(),
+        'completed': unfiltered_applications.filter(status='closed').count(),
+        'rejected': unfiltered_applications.filter(status='Rejected').count(),  # Changed this line
+        'schemes': LoanScheme.objects.all(),
+        'agents': agents,
+        'status_choices': LoanApplication.get_status_choices(),
+        'current_section': section,
+        'current_status': status,
+        'current_scheme': scheme,
+        'current_agent': agent,
     }
+    
+    context.update({
+        'search_query': search_query,
+        'search_count': applications.count() if search_query else None
+    })
+    
     return render(request, 'loan/applications_list.html', context)
 
-@login_required
-@user_passes_test(is_staff_user)
+@login_required(login_url='/dashboard/staff-login/')
+@user_passes_test(is_manager_user, login_url='/dashboard/staff-login/')
 @require_POST
 def update_application_status(request, application_id):
     try:
         application = LoanApplication.objects.get(id=application_id)
-        application.status = request.POST.get('status')
+        new_status = request.POST.get('status')
+        
+        if not new_status:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Status is required'
+            })
+            
+        # Update status
+        application.status = new_status
         application.save()
-        return JsonResponse({'status': 'success'})
+        
+        # If status is changed to not_converted or closed, remove agent assignment
+        if new_status in ['not_converted', 'closed']:
+            application.assigned_agent = None
+            application.save()
+        
+        return JsonResponse({
+            'status': 'success',
+            'new_status': application.status
+        })
+    except LoanApplication.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Application not found'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        })
+
+@login_required(login_url='/dashboard/staff-login/')
+@user_passes_test(is_manager_user, login_url='/dashboard/staff-login/')
+@require_POST
+def assign_agent(request, application_id):
+    try:
+        application = LoanApplication.objects.get(id=application_id)
+        agent_id = request.POST.get('agent_id')
+        
+        if agent_id and agent_id != 'null':
+            try:
+                agent = get_user_model().objects.get(id=agent_id)
+                application.assigned_agent = agent
+                application.status = 'assigned'  # Set status to assigned
+            except get_user_model().DoesNotExist:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Selected agent does not exist'
+                })
+        else:
+            application.assigned_agent = None
+            # Optionally revert status to new_lead if agent is unassigned
+            application.status = 'new_lead'
+            
+        application.save()
+        return JsonResponse({
+            'status': 'success',
+            'agent_id': agent_id if agent_id and agent_id != 'null' else None,
+            'new_status': application.status  # Send back the new status
+        })
+    except LoanApplication.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Application not found'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        })
+
+@login_required
+@user_passes_test(is_manager_user)
+def get_search_suggestions(request):
+    query = request.GET.get('q', '').strip()
+    suggestions = []
+    
+    if query:
+        # Get suggestions from different fields
+        applications = LoanApplication.objects.annotate(
+            full_name=Concat('name', Value(' - '), 'phone_number')
+        ).filter(
+            Q(name__icontains=query) |
+            Q(phone_number__icontains=query) |
+            Q(reference_number__icontains=query) |
+            Q(scheme__title__icontains=query)
+        ).distinct()[:5]  # Limit to 5 suggestions
+        
+        for app in applications:
+            suggestions.append({
+                'id': app.id,
+                'text': f"{app.name} - {app.phone_number}",
+                'reference': app.reference_number,
+                'type': 'application'
+            })
+            
+    return JsonResponse({'suggestions': suggestions})
+
+@login_required(login_url='/dashboard/staff-login/')
+@user_passes_test(is_manager_user, login_url='/dashboard/staff-login/')
+def manage_schemes(request):
+    loans = LoanScheme.objects.all().prefetch_related(
+        'applications',
+        'key_points'
+    ).order_by('-created_at')
+    
+    return render(request, 'loan/manage_schemes.html', {
+        'loans': loans
+    })
+
+@login_required
+@user_passes_test(is_manager_user)
+@require_POST
+def toggle_scheme_status(request, scheme_id):
+    try:
+        scheme = get_object_or_404(LoanScheme, id=scheme_id)
+        scheme.is_active = not scheme.is_active
+        scheme.save()
+        return JsonResponse({
+            'status': 'success',
+            'is_active': scheme.is_active,
+            'message': f'Scheme {scheme.title} {"activated" if scheme.is_active else "deactivated"} successfully'
+        })
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)})

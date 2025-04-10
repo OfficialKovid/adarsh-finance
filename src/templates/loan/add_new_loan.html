@@ -1,9 +1,13 @@
-{% extends 'base/base-website.html' %}
+{% extends 'dashboard/base_manager_dashboard.html' %}
 {% load static %}
 
-{% block title %}Add New Loan Scheme - Admin{% endblock %}
+{% block title %}Add New Loan Scheme - Manager Dashboard{% endblock %}
 
-{% block head %}
+{% block header_text %}
+<h1>Add New Loan Scheme</h1>
+{% endblock %}
+
+{% block extra_css %}
 <style>
     .admin-form-section {
         padding: 120px 0 80px;
@@ -393,7 +397,7 @@
 {% endif %}
 {% endblock %}
 
-{% block js %}
+{% block extra_js %}
 <script>
     // Dynamic form field management
     function addField(containerId, fieldHtml) {

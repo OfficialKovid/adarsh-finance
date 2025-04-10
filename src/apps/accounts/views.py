@@ -78,11 +78,62 @@ def login_page(request):
             
     return render(request, "accounts/login.html")
 
+def staff_login(request):
+    if request.user.is_authenticated:
+        if request.user.role == 'AGENT':
+            return redirect('dashboard:agent-dashboard')
+        elif request.user.role == 'MANAGER':
+            return redirect('dashboard:manager-dashboard')
+        elif request.user.role == 'ADMIN':
+            return redirect('admin:index')
+        return redirect('account')
+        
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        
+        user = authenticate(request, email=email, password=password)
+        
+        if user is not None and user.role in ['AGENT', 'MANAGER', 'ADMIN']:
+            login(request, user)
+            if user.role == 'AGENT':
+                return redirect('dashboard:agent-dashboard')
+            elif user.role == 'MANAGER':
+                return redirect('dashboard:manager-dashboard')
+            elif user.role == 'ADMIN':
+                return redirect('admin:index')
+        else:
+            messages.error(request, 'Invalid staff credentials')
+            return redirect('staff-login')
+            
+    return render(request, "accounts/staff_login.html")
+
+# Keep the decorators here as they are used by dashboard app
+def agent_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.role == 'AGENT':
+            return view_func(request, *args, **kwargs)
+        messages.error(request, 'Access denied. Agent privileges required.')
+        return redirect('staff-login')
+    return wrapper
+
+def manager_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.role == 'MANAGER':
+            return view_func(request, *args, **kwargs)
+        messages.error(request, 'Access denied. Manager privileges required.')
+        return redirect('staff-login')
+    return wrapper
+
 @login_required(login_url='/login/')
 def account(request):
     return render(request, "accounts/account.html")
 
-
 def logout_user(request):
+    # Store the role before logout since we'll lose it after logout
+    is_staff = request.user.role in ['AGENT', 'MANAGER', 'ADMIN']
     logout(request)
-    return redirect('/login/')
+    # Redirect based on whether they were staff or customer
+    if is_staff:
+        return redirect('staff-login')
+    return redirect('login')

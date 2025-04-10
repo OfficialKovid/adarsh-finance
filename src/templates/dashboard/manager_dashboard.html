@@ -1,0 +1,90 @@
+{% extends 'dashboard/base_manager_dashboard.html' %}
+
+{% block header_text %}
+<h1>Welcome back, {{ request.user.first_name }}</h1>
+<p>Here's what's happening today</p>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>Total Applications</h3>
+        <div class="stat-value">2,543</div>
+    </div>
+    <div class="stat-card">
+        <h3>Active Agents</h3>
+        <div class="stat-value">12</div>
+    </div>
+    <div class="stat-card">
+        <h3>Pending Approvals</h3>
+        <div class="stat-value">28</div>
+    </div>
+    <div class="stat-card">
+        <h3>Total Disbursed</h3>
+        <div class="stat-value">₹4.2M</div>
+    </div>
+</div>
+
+<!-- Content Grid -->
+<div class="content-grid">
+    <!-- Recent Activity -->
+    <div class="content-card">
+        <h2>Recent Activity</h2>
+        <ul class="activity-list">
+            <li class="activity-item">
+                <div class="activity-icon success">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="activity-details">
+                    <h4>Loan Application Approved</h4>
+                    <p>Agent: John Doe • 2 hours ago</p>
+                </div>
+            </li>
+            <li class="activity-item">
+                <div class="activity-icon warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="activity-details">
+                    <h4>New Application Pending Review</h4>
+                    <p>Agent: Sarah Smith • 3 hours ago</p>
+                </div>
+            </li>
+            <li class="activity-item">
+                <div class="activity-icon danger">
+                    <i class="fas fa-times"></i>
+                </div>
+                <div class="activity-details">
+                    <h4>Application Rejected</h4>
+                    <p>Agent: Mike Johnson • 5 hours ago</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Agent Performance -->
+    <div class="content-card">
+        <h2>Top Performing Agents</h2>
+        <ul class="activity-list">
+            <li class="activity-item">
+                <div class="activity-details">
+                    <h4>John Doe</h4>
+                    <p>15 Applications • 90% Approval Rate</p>
+                </div>
+            </li>
+            <li class="activity-item">
+                <div class="activity-details">
+                    <h4>Sarah Smith</h4>
+                    <p>12 Applications • 85% Approval Rate</p>
+                </div>
+            </li>
+            <li class="activity-item">
+                <div class="activity-details">
+                    <h4>Mike Johnson</h4>
+                    <p>10 Applications • 80% Approval Rate</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
