@@ -4,7 +4,8 @@ from .views import (
     agent_dashboard, 
     manager_dashboard, 
     agents_management,
-    toggle_agent_status
+    toggle_agent_status,
+    add_agent
 )
 
 app_name = 'dashboard'
@@ -15,4 +16,5 @@ urlpatterns = [
     path('manager/', manager_dashboard, name='manager-dashboard'),
     path('manager/agents/', agents_management, name='agents-management'),
     path('manager/agents/<int:agent_id>/toggle/', toggle_agent_status, name='toggle-agent-status'),
+    path('manager/agents/add/', add_agent, name='add-agent'),
 ]

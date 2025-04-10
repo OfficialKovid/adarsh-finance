@@ -258,6 +258,26 @@
         min-width: 120px;
     }
 
+    .action-btn, .agent-assign-select {
+        min-width: 120px;
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        background: white;
+        font-size: 0.9em;
+        cursor: pointer;
+    }
+
+    .action-btn:hover, .agent-assign-select:hover {
+        border-color: var(--primary-color);
+    }
+
+    .action-btn:focus, .agent-assign-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.25);
+    }
+
     .section-tabs {
         display: flex;
         gap: 10px;
@@ -417,7 +437,37 @@
         font-size: 0.9em;
         color: #666;
     }
+
+    /* Add these new notification styles */
+    .notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 4px;
+        color: white;
+        font-size: 14px;
+        transform: translateY(100px);
+        transition: transform 0.3s ease-in-out;
+        z-index: 1000;
+        max-width: 300px;
+    }
+
+    .notification.success {
+        background-color: #28a745;
+    }
+
+    .notification.error {
+        background-color: #dc3545;
+    }
+
+    .notification.show {
+        transform: translateY(0);
+    }
 </style>
+
+<!-- Add this div at the end of the content block, just before the script tags -->
+<div id="notification" class="notification"></div>
 
 {% block extra_js %}
 <script>
@@ -484,14 +534,14 @@
                         window.location.reload();
                     }, 500);
                 } else {
-                    alert('Error updating status');
+                    showNotification('Error updating status', 'error');
                     // Reset to previous value
                     this.value = this.getAttribute('data-current-status') || '';
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error updating status');
+                showNotification('Error updating status', 'error');
                 // Reset to previous value
                 this.value = this.getAttribute('data-current-status') || '';
             });
@@ -630,7 +680,176 @@
         }
     });
     
-    // ...existing script...
+    // Add agent assignment handler function
+    function assignAgent(applicationId, agentId) {
+        const formData = new FormData();
+        formData.append('agent_id', agentId);
+        
+        fetch(`/loans/applications/${applicationId}/assign-agent/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Update the status to assigned
+                const row = document.querySelector(`tr[data-application-id="${applicationId}"]`);
+                const statusBadge = row.querySelector('.status-badge');
+                statusBadge.className = `status-badge status-${data.new_status}`;
+                statusBadge.textContent = data.new_status.split('_').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ');
+                
+                // Update status dropdown to match new status
+                const statusSelect = row.querySelector('.action-btn');
+                if (statusSelect) {
+                    statusSelect.value = data.new_status;
+                }
+                
+                // Reload the page after a short delay to update counts
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            } else {
+                showNotification('Error assigning agent: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error assigning agent', 'error');
+        });
+    }
+
+    // Modify the action button handler
+    document.querySelectorAll('.action-btn').forEach(select => {
+        select.addEventListener('change', function() {
+            const applicationId = this.dataset.applicationId;
+            const status = this.value;
+            const row = this.closest('tr');
+            
+            if (!status) return;
+
+            // If status change is to assign an agent
+            if (status === 'assign_agent') {
+                const agentId = prompt('Enter agent ID to assign:');
+                if (agentId) {
+                    assignAgent(applicationId, agentId);
+                }
+                // Reset the select to previous value
+                this.value = this.getAttribute('data-current-status') || '';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('status', status);
+            
+            fetch(`/loans/applications/${applicationId}/update-status/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Update the status badge
+                    const statusBadge = row.querySelector('.status-badge');
+                    statusBadge.className = `status-badge status-${status}`;
+                    statusBadge.textContent = status.split('_').map(word => 
+                        word.charAt(0).toUpperCase() + word.slice(1)
+                    ).join(' ');
+                    
+                    // Reload the page after a short delay to update counts
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    showNotification('Error updating status', 'error');
+                    // Reset to previous value
+                    this.value = this.getAttribute('data-current-status') || '';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error updating status', 'error');
+                // Reset to previous value
+                this.value = this.getAttribute('data-current-status') || '';
+            });
+
+            // Store current value for potential rollback
+            this.setAttribute('data-current-status', status);
+        });
+    });
+
+    // Add this new function for agent assignment
+    document.querySelectorAll('.agent-assign-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const applicationId = this.dataset.applicationId;
+            const agentId = this.value;
+            
+            const formData = new FormData();
+            formData.append('agent_id', agentId);
+            
+            fetch(`/loans/applications/${applicationId}/assign-agent/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const row = this.closest('tr');
+                    const statusBadge = row.querySelector('.status-badge');
+                    statusBadge.className = `status-badge status-${data.new_status}`;
+                    statusBadge.textContent = data.new_status
+                        .split('_')
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(' ');
+                        
+                    // Update status dropdown
+                    const statusSelect = row.querySelector('.action-btn');
+                    if (statusSelect) {
+                        statusSelect.value = data.new_status;
+                        statusSelect.setAttribute('data-current-status', data.new_status);
+                    }
+                    
+                    // Show notification instead of alert
+                    showNotification(data.message, 'success');
+                } else {
+                    // Revert selection on error
+                    this.value = '';
+                    showNotification(data.message || 'Error assigning agent', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                this.value = '';  // Reset selection
+                showNotification('Error assigning agent', 'error');
+            });
+        });
+    });
+
+    // Add this notification function
+    function showNotification(message, type = 'success') {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.className = `notification ${type}`;
+        
+        // Trigger reflow and add show class
+        notification.offsetHeight;
+        notification.classList.add('show');
+        
+        // Auto hide after 3 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 3000);
+    }
 </script>
 {% endblock %}
 {% endblock %}

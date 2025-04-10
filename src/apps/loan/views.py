@@ -228,32 +228,45 @@ def update_application_status(request, application_id):
 @login_required(login_url='/dashboard/staff-login/')
 @user_passes_test(is_manager_user, login_url='/dashboard/staff-login/')
 @require_POST
+@transaction.atomic
 def assign_agent(request, application_id):
     try:
-        application = LoanApplication.objects.get(id=application_id)
+        application = LoanApplication.objects.select_for_update().get(id=application_id)
         agent_id = request.POST.get('agent_id')
         
-        if agent_id and agent_id != 'null':
-            try:
-                agent = get_user_model().objects.get(id=agent_id)
-                application.assigned_agent = agent
-                application.status = 'assigned'  # Set status to assigned
-            except get_user_model().DoesNotExist:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Selected agent does not exist'
-                })
-        else:
+        if not agent_id or agent_id == 'null':
+            # Remove agent assignment
             application.assigned_agent = None
-            # Optionally revert status to new_lead if agent is unassigned
             application.status = 'new_lead'
+            application.save(update_fields=['assigned_agent', 'status'])
+            return JsonResponse({
+                'status': 'success',
+                'new_status': 'new_lead',
+                'message': 'Agent assignment removed'
+            })
+
+        try:
+            agent = get_user_model().objects.get(id=agent_id, role='AGENT', is_active=True)
+        except get_user_model().DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Selected agent does not exist or is not active'
+            })
+
+        # Update application with agent and status
+        application.assigned_agent = agent
+        if application.status == 'new_lead':
+            application.status = 'assigned'
             
-        application.save()
+        application.save(update_fields=['assigned_agent', 'status'])
+
         return JsonResponse({
             'status': 'success',
-            'agent_id': agent_id if agent_id and agent_id != 'null' else None,
-            'new_status': application.status  # Send back the new status
+            'agent_id': agent.id,
+            'new_status': application.status,
+            'message': f'Application assigned to {agent.get_full_name()}'
         })
+
     except LoanApplication.DoesNotExist:
         return JsonResponse({
             'status': 'error',
