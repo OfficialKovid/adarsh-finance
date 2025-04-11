@@ -1,0 +1,90 @@
+{% extends 'dashboard/agent/base_agent.html' %}
+
+{% block header_text %}
+<h1>Welcome back, {{ request.user.first_name }}</h1>
+<p>Here's your activity summary</p>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>My Applications</h3>
+        <div class="stat-value">24</div>
+    </div>
+    <div class="stat-card">
+        <h3>Pending Review</h3>
+        <div class="stat-value">8</div>
+    </div>
+    <div class="stat-card">
+        <h3>Approved</h3>
+        <div class="stat-value">12</div>
+    </div>
+    <div class="stat-card">
+        <h3>Success Rate</h3>
+        <div class="stat-value">85%</div>
+    </div>
+</div>
+
+<!-- Content Grid -->
+<div class="content-grid">
+    <!-- Recent Applications -->
+    <div class="content-card">
+        <h2>Recent Applications</h2>
+        <ul class="activity-list">
+            <li class="activity-item">
+                <div class="activity-icon success">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="activity-details">
+                    <h4>John Smith - Personal Loan</h4>
+                    <p>Approved • 2 hours ago</p>
+                </div>
+            </li>
+            <li class="activity-item">
+                <div class="activity-icon warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="activity-details">
+                    <h4>Mary Johnson - Business Loan</h4>
+                    <p>Under Review • 3 hours ago</p>
+                </div>
+            </li>
+            <li class="activity-item">
+                <div class="activity-icon danger">
+                    <i class="fas fa-times"></i>
+                </div>
+                <div class="activity-details">
+                    <h4>Robert Brown - Home Loan</h4>
+                    <p>Rejected • 5 hours ago</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Document Updates -->
+    <div class="content-card">
+        <h2>Recent Documents</h2>
+        <ul class="activity-list">
+            <li class="activity-item">
+                <div class="activity-details">
+                    <h4>ID Verification</h4>
+                    <p>2 new documents pending review</p>
+                </div>
+            </li>
+            <li class="activity-item">
+                <div class="activity-details">
+                    <h4>Income Proof</h4>
+                    <p>3 documents approved today</p>
+                </div>
+            </li>
+            <li class="activity-item">
+                <div class="activity-details">
+                    <h4>Address Proof</h4>
+                    <p>1 document needs attention</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
