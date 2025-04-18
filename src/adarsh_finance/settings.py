@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'apps.home.apps.HomeConfig',
     'apps.loan.apps.LoanConfig',
     'apps.dashboard.apps.DashboardConfig',
+    'apps.documents.apps.DocumentsConfig',
 ]
 
 

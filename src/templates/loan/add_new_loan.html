@@ -283,8 +283,8 @@
                 </div>
                 <div id="benefits-container">
                     <div class="form-group">
-                        <label>Add New Benefit*</label>
-                        <textarea name="benefits[]" required></textarea>
+                        <label>Add New Benefit</label>
+                        <textarea name="benefits[]"></textarea>
                     </div>
                 </div>
                 <button type="button" class="add-more-btn" onclick="addBenefit()">+ Add Benefit</button>
@@ -302,8 +302,8 @@
                 </div>
                 <div id="criteria-container">
                     <div class="form-group">
-                        <label>Add New Criteria*</label>
-                        <textarea name="criteria[]" required></textarea>
+                        <label>Add New Criteria</label>
+                        <textarea name="criteria[]"></textarea>
                     </div>
                 </div>
                 <button type="button" class="add-more-btn" onclick="addCriteria()">+ Add Criteria</button>
@@ -321,8 +321,20 @@
                 </div>
                 <div id="documents-container">
                     <div class="form-group">
-                        <label>Add New Document*</label>
-                        <input type="text" name="documents[]" required>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Document Name</label>
+                                <input type="text" name="documents[]">
+                            </div>
+                            <div class="form-group">
+                                <label>Document Type</label>
+                                <select name="document_types[]">
+                                    {% for type in document_types %}
+                                        <option value="{{ type.id }}">{{ type.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <button type="button" class="add-more-btn" onclick="addDocument()">+ Add Document</button>
@@ -366,14 +378,60 @@
                     </select>
                 </div>
                 <div id="keypoints-container">
-                    <div class="form-group">
-                        <label>Key Point 1*</label>
-                        <input type="text" name="key_points[]" required 
-                               placeholder="Enter a key highlight of this loan scheme">
-                    </div>
+                    <!-- Remove the initial empty field -->
                 </div>
                 <button type="button" class="add-more-btn" onclick="addKeyPoint()" 
                         id="addKeyPointBtn">+ Add Key Point</button>
+            </div>
+
+            <div class="form-section">
+                <h3>Required Data Fields</h3>
+                <div class="form-group">
+                    <label>Select Existing Fields</label>
+                    <select id="existingDataFields" multiple>
+                        {% for field in existing_data_fields %}
+                            <option value="{{ field.field_name }}|{{ field.field_type }}">
+                                {{ field.field_name }} ({{ field.get_field_type_display }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div id="data-fields-container">
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Field Name</label>
+                                <input type="text" name="data_field_names[]" 
+                                       placeholder="e.g., First Name, Phone Number">
+                            </div>
+                            <div class="form-group">
+                                <label>Field Type</label>
+                                <select name="data_field_types[]">
+                                    <option value="text">Text</option>
+                                    <option value="number">Number</option>
+                                    <option value="email">Email</option>
+                                    <option value="phone">Phone Number</option>
+                                    <option value="date">Date</option>
+                                    <option value="file">File Upload</option>
+                                    <option value="address">Address</option>
+                                    <option value="select">Select Options</option>
+                                    <option value="radio">Radio Buttons</option>
+                                    <option value="checkbox">Checkbox</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Required?</label>
+                                <input type="checkbox" name="data_field_required[]" checked>
+                            </div>
+                        </div>
+                        <div class="form-group options-group" style="display:none;">
+                            <label>Options (comma-separated)</label>
+                            <input type="text" name="data_field_options[]" 
+                                   placeholder="e.g., Option 1, Option 2, Option 3">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="add-more-btn" onclick="addDataField()">+ Add Data Field</button>
             </div>
 
             <div class="form-actions">
@@ -409,26 +467,43 @@
     }
 
     function addBenefit() {
+        const firstBenefit = document.querySelector('#benefits-container .form-group:first-child textarea');
+        if (firstBenefit && !firstBenefit.value) {
+            firstBenefit.focus();
+            return;
+        }
         addField('benefits-container', `
-            <label>Benefit Description*</label>
-            <textarea name="benefits[]" required></textarea>
-            <i class="fas fa-times remove-item" onclick="this.parentElement.remove()"></i>
+            <label>Benefit Description</label>
+            <textarea name="benefits[]"></textarea>
+            <i class="fas fa-times remove-item" onclick="removeFieldWithValidation(this, 'benefits')"></i>
         `);
     }
 
     function addCriteria() {
         addField('criteria-container', `
-            <label>Criteria*</label>
-            <textarea name="criteria[]" required></textarea>
-            <i class="fas fa-times remove-item" onclick="this.parentElement.remove()"></i>
+            <label>Criteria</label>
+            <textarea name="criteria[]"></textarea>
+            <i class="fas fa-times remove-item" onclick="removeFieldWithValidation(this, 'criteria')"></i>
         `);
     }
 
     function addDocument() {
         addField('documents-container', `
-            <label>Document Name*</label>
-            <input type="text" name="documents[]" required>
-            <i class="fas fa-times remove-item" onclick="this.parentElement.remove()"></i>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Document Name</label>
+                    <input type="text" name="documents[]">
+                </div>
+                <div class="form-group">
+                    <label>Document Type</label>
+                    <select name="document_types[]">
+                        {% for type in document_types %}
+                            <option value="{{ type.id }}">{{ type.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <i class="fas fa-times remove-item" onclick="removeFieldWithValidation(this, 'documents')"></i>
+            </div>
         `);
     }
 
@@ -485,10 +560,16 @@
     // Handle existing benefits selection
     document.getElementById('existingBenefits').addEventListener('change', function(e) {
         Array.from(e.target.selectedOptions).forEach(option => {
+            // Remove initial required benefit if it's empty
+            const firstBenefit = document.querySelector('#benefits-container .form-group:first-child textarea');
+            if (firstBenefit && !firstBenefit.value) {
+                firstBenefit.closest('.form-group').remove();
+            }
+            
             addField('benefits-container', `
-                <label>Benefit Description*</label>
-                <textarea name="benefits[]" required>${option.value}</textarea>
-                <i class="fas fa-times remove-item" onclick="this.parentElement.remove()"></i>
+                <label>Benefit Description</label>
+                <textarea name="benefits[]">${option.value}</textarea>
+                <i class="fas fa-times remove-item" onclick="removeFieldWithValidation(this, 'benefits')"></i>
             `);
         });
         this.selectedIndex = -1;
@@ -498,9 +579,9 @@
     document.getElementById('existingCriteria').addEventListener('change', function(e) {
         Array.from(e.target.selectedOptions).forEach(option => {
             addField('criteria-container', `
-                <label>Criteria*</label>
-                <textarea name="criteria[]" required>${option.value}</textarea>
-                <i class="fas fa-times remove-item" onclick="this.parentElement.remove()"></i>
+                <label>Criteria</label>
+                <textarea name="criteria[]">${option.value}</textarea>
+                <i class="fas fa-times remove-item" onclick="removeFieldWithValidation(this, 'criteria')"></i>
             `);
         });
         this.selectedIndex = -1;
@@ -510,23 +591,23 @@
     document.getElementById('existingDocuments').addEventListener('change', function(e) {
         Array.from(e.target.selectedOptions).forEach(option => {
             addField('documents-container', `
-                <label>Document Name*</label>
-                <input type="text" name="documents[]" value="${option.value}" required>
-                <i class="fas fa-times remove-item" onclick="this.parentElement.remove()"></i>
+                <label>Document Name</label>
+                <input type="text" name="documents[]" value="${option.value}">
+                <i class="fas fa-times remove-item" onclick="removeFieldWithValidation(this, 'documents')"></i>
             `);
         });
         this.selectedIndex = -1;
     });
 
     // Handle key points
-    let keypointCount = 1;
-    
+    let keypointCount = 0;  // Start from 0
+
     function addKeyPoint() {
         if (keypointCount < 3) {
             keypointCount++;
             addField('keypoints-container', `
-                <label>Key Point ${keypointCount}*</label>
-                <input type="text" name="key_points[]" required 
+                <label>Key Point ${keypointCount}</label>
+                <input type="text" name="key_points[]" 
                        placeholder="Enter a key highlight of this loan scheme">
                 <i class="fas fa-times remove-item" onclick="removeKeyPoint(this.parentElement)"></i>
             `);
@@ -558,8 +639,8 @@
             if (keypointCount < 3) {
                 keypointCount++;
                 addField('keypoints-container', `
-                    <label>Key Point ${keypointCount}*</label>
-                    <input type="text" name="key_points[]" value="${option.value}" required>
+                    <label>Key Point ${keypointCount}</label>
+                    <input type="text" name="key_points[]" value="${option.value}">
                     <i class="fas fa-times remove-item" onclick="removeKeyPoint(this.parentElement)"></i>
                 `);
                 
@@ -570,5 +651,147 @@
         });
         this.selectedIndex = -1;
     });
+
+    // Handle data fields
+    function addDataField() {
+        addField('data-fields-container', `
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Field Name</label>
+                    <input type="text" name="data_field_names[]" 
+                           placeholder="e.g., First Name, Phone Number">
+                </div>
+                <div class="form-group">
+                    <label>Field Type</label>
+                    <select name="data_field_types[]" required onchange="toggleOptionsField(this)">
+                        <option value="text">Text</option>
+                        <option value="number">Number</option>
+                        <option value="email">Email</option>
+                        <option value="phone">Phone Number</option>
+                        <option value="date">Date</option>
+                        <option value="file">File Upload</option>
+                        <option value="address">Address</option>
+                        <option value="select">Select Options</option>
+                        <option value="radio">Radio Buttons</option>
+                        <option value="checkbox">Checkbox</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Required?</label>
+                    <input type="checkbox" name="data_field_required[]" checked>
+                </div>
+                <i class="fas fa-times remove-item" onclick="removeDataField(this)"></i>
+            </div>
+            <div class="form-group options-group" style="display:none;">
+                <label>Options (comma-separated)</label>
+                <input type="text" name="data_field_options[]" 
+                       placeholder="e.g., Option 1, Option 2, Option 3">
+            </div>
+        `);
+    }
+
+    function toggleOptionsField(select) {
+        const optionsGroup = select.closest('.form-group').parentElement.nextElementSibling;
+        optionsGroup.style.display = 
+            ['select', 'radio', 'checkbox'].includes(select.value) ? 'block' : 'none';
+    }
+
+    function removeDataField(element) {
+        element.closest('.form-group').remove();
+    }
+
+    // Handle existing data fields selection
+    document.getElementById('existingDataFields').addEventListener('change', function(e) {
+        Array.from(e.target.selectedOptions).forEach(option => {
+            const [name, type] = option.value.split('|');
+            addField('data-fields-container', `
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Field Name</label>
+                        <input type="text" name="data_field_names[]" value="${name}">
+                    </div>
+                    <div class="form-group">
+                        <label>Field Type</label>
+                        <select name="data_field_types[]" required>
+                            <option value="text" ${type === 'text' ? 'selected' : ''}>Text</option>
+                            <option value="number" ${type === 'number' ? 'selected' : ''}>Number</option>
+                            <option value="email" ${type === 'email' ? 'selected' : ''}>Email</option>
+                            <option value="phone" ${type === 'phone' ? 'selected' : ''}>Phone Number</option>
+                            <option value="date" ${type === 'date' ? 'selected' : ''}>Date</option>
+                            <option value="file" ${type === 'file' ? 'selected' : ''}>File Upload</option>
+                            <option value="address" ${type === 'address' ? 'selected' : ''}>Address</option>
+                            <option value="select" ${type === 'select' ? 'selected' : ''}>Select Options</option>
+                            <option value="radio" ${type === 'radio' ? 'selected' : ''}>Radio Buttons</option>
+                            <option value="checkbox" ${type === 'checkbox' ? 'selected' : ''}>Checkbox</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Required?</label>
+                        <input type="checkbox" name="data_field_required[]" checked>
+                    </div>
+                    <i class="fas fa-times remove-item" onclick="removeDataField(this)"></i>
+                </div>
+            `);
+        });
+        this.selectedIndex = -1;
+    });
+
+    // Add form validation before submission
+    document.getElementById('loanSchemeForm').addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent default submission
+
+        function hasValidEntries(selector) {
+            const elements = document.querySelectorAll(selector);
+            return Array.from(elements).some(el => el.value.trim() !== '');
+        }
+
+        // Check if either existing selections or new entries exist for each section
+        if (!hasValidEntries('[name="benefits[]"]')) {
+            alert('Please add or select at least one benefit');
+            return;
+        }
+
+        if (!hasValidEntries('[name="criteria[]"]')) {
+            alert('Please add or select at least one eligibility criteria');
+            return;
+        }
+
+        if (!hasValidEntries('[name="documents[]"]')) {
+            alert('Please add or select at least one required document');
+            return;
+        }
+
+        if (!hasValidEntries('[name="data_field_names[]"]')) {
+            alert('Please add or select at least one data field');
+            return;
+        }
+
+        if (selectedSectors.size === 0) {
+            alert('Please select at least one sector');
+            return;
+        }
+
+        // Check if at least one key point exists
+        const keyPoints = document.querySelectorAll('[name="key_points[]"]');
+        if (keyPoints.length === 0 || !Array.from(keyPoints).some(kp => kp.value.trim())) {
+            alert('Please add at least one key point');
+            return;
+        }
+
+        // If all validations pass, submit the form
+        this.submit();
+    });
+
+    // Add generic remove function with validation
+    function removeFieldWithValidation(element, type) {
+        const container = document.getElementById(`${type}-container`);
+        const itemCount = container.querySelectorAll('.form-group').length;
+        
+        if (itemCount > 1) {
+            element.closest('.form-group').remove();
+        } else {
+            alert(`At least one ${type.slice(0, -1)} is required`);
+        }
+    }
 </script>
 {% endblock %}

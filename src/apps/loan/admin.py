@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import LoanScheme, Benefit, EligibilityCriteria, RequiredDocument, CoveredSector, ServiceOffered, LoanApplication
+from .models import (LoanScheme, Benefit, EligibilityCriteria, 
+                    CoveredSector, ServiceOffered, LoanApplication)  # Remove RequiredDocument
 
 @admin.register(LoanScheme)
 class LoanSchemeAdmin(admin.ModelAdmin):
@@ -18,6 +19,5 @@ class LoanApplicationAdmin(admin.ModelAdmin):
 
 admin.site.register(Benefit)
 admin.site.register(EligibilityCriteria)
-admin.site.register(RequiredDocument)
 admin.site.register(CoveredSector)
 admin.site.register(ServiceOffered)

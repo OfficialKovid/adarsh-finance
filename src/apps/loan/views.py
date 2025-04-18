@@ -4,11 +4,12 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.contrib import messages
-from .models import LoanScheme, Benefit, EligibilityCriteria, RequiredDocument, CoveredSector, KeyPoint, LoanApplication
+from .models import LoanScheme, Benefit, EligibilityCriteria, RequiredDocument, CoveredSector, KeyPoint, LoanApplication, RequiredDataField
 from django.contrib.auth import get_user_model
 from django.db.models import Q, Value
 from django.db.models.functions import Concat
 import json, logging
+from apps.documents.models import RequiredDocument, DocumentType  # Add this import
 
 logger = logging.getLogger(__name__)
 
@@ -26,53 +27,99 @@ def is_manager_user(user):
 @user_passes_test(is_manager_user, login_url='dashboard/staff-login/')
 def add_new_loan(request):
     if request.method == 'POST':
-        # Create new loan scheme
-        scheme = LoanScheme.objects.create(
-            title=request.POST['title'],
-            full_name=request.POST['full_name'],  # changed from short_name
-            description=request.POST['description'],
-            start_year=request.POST.get('start_year') or None,  # handle optional field
-            end_year=request.POST.get('end_year') or None,      # handle optional field
-            contact_info=request.POST['contact_info'],
-            image=request.FILES.get('image')
-        )
+        # Validate that at least one item exists in each section
+        sections = {
+            'benefits[]': 'benefits',
+            'criteria[]': 'eligibility criteria',
+            'documents[]': 'required documents',
+            'data_field_names[]': 'data fields',
+            'sectors[]': 'sectors'
+        }
 
-        # Add sectors
-        sectors = request.POST.get('sectors[]', '').split(',')
-        for sector in sectors:
-            if sector:
-                CoveredSector.objects.create(
-                    scheme=scheme,
-                    sector_name=sector
-                )
+        for field, name in sections.items():
+            values = [v.strip() for v in request.POST.getlist(field) if v.strip()]
+            if not values:
+                messages.error(request, f'Please add or select at least one {name}')
+                return redirect('add_new_loan')
 
-        # Add benefits
-        benefits = request.POST.getlist('benefits[]')
-        for benefit in benefits:
-            if benefit:
-                Benefit.objects.create(scheme=scheme, description=benefit)
+        with transaction.atomic():
+            # Create new loan scheme
+            scheme = LoanScheme.objects.create(
+                title=request.POST['title'],
+                full_name=request.POST['full_name'],  # changed from short_name
+                description=request.POST['description'],
+                start_year=request.POST.get('start_year') or None,  # handle optional field
+                end_year=request.POST.get('end_year') or None,      # handle optional field
+                contact_info=request.POST['contact_info'],
+                image=request.FILES.get('image')
+            )
 
-        # Add eligibility criteria
-        criteria_list = request.POST.getlist('criteria[]')
-        for criteria in criteria_list:
-            if criteria:
-                EligibilityCriteria.objects.create(scheme=scheme, criteria=criteria)
+            # Add sectors
+            sectors = request.POST.get('sectors[]', '').split(',')
+            for sector in sectors:
+                if sector:
+                    CoveredSector.objects.create(
+                        scheme=scheme,
+                        sector_name=sector
+                    )
 
-        # Add required documents
-        documents = request.POST.getlist('documents[]')
-        for doc in documents:
-            if doc:
-                RequiredDocument.objects.create(scheme=scheme, document_name=doc)
+            # Add benefits
+            benefits = request.POST.getlist('benefits[]')
+            for benefit in benefits:
+                if benefit:
+                    Benefit.objects.create(scheme=scheme, description=benefit)
 
-        # Add key points
-        key_points = request.POST.getlist('key_points[]')
-        for i, point in enumerate(key_points[:3]):  # Limit to 3 points
-            if point:
-                KeyPoint.objects.create(
-                    scheme=scheme,
-                    point=point,
-                    display_order=i
-                )
+            # Add eligibility criteria
+            criteria_list = request.POST.getlist('criteria[]')
+            for criteria in criteria_list:
+                if criteria:
+                    EligibilityCriteria.objects.create(scheme=scheme, criteria=criteria)
+
+            # Update document creation
+            documents = request.POST.getlist('documents[]')
+            document_types = request.POST.getlist('document_types[]')
+            
+            for i, doc in enumerate(documents):
+                if doc:
+                    doc_type_id = document_types[i] if i < len(document_types) else 1  # Default to first type (PDF)
+                    RequiredDocument.objects.create(
+                        scheme=scheme,
+                        document_name=doc,
+                        document_type_id=doc_type_id
+                    )
+
+            # Add key points
+            key_points = request.POST.getlist('key_points[]')
+            for i, point in enumerate(key_points[:3]):  # Limit to 3 points
+                if point:
+                    KeyPoint.objects.create(
+                        scheme=scheme,
+                        point=point,
+                        display_order=i
+                    )
+
+            # Add required data fields
+            field_names = request.POST.getlist('data_field_names[]')
+            field_types = request.POST.getlist('data_field_types[]')
+            field_required = request.POST.getlist('data_field_required[]')
+            field_options = request.POST.getlist('data_field_options[]')
+
+            for i, (name, type_) in enumerate(zip(field_names, field_types)):
+                if name and type_:
+                    is_required = 'on' in (field_required[i] if i < len(field_required) else 'on')
+                    options = field_options[i] if i < len(field_options) else None
+                    
+                    if type_ in ['select', 'radio', 'checkbox'] and not options:
+                        options = ''  # Ensure options is not None for these field types
+                        
+                    RequiredDataField.objects.create(
+                        scheme=scheme,
+                        field_name=name,
+                        field_type=type_,
+                        is_required=is_required,
+                        display_order=i,
+                        options=options
+                    )
 
         return redirect('list_loans')
 
@@ -83,6 +130,8 @@ def add_new_loan(request):
         'existing_criteria': EligibilityCriteria.objects.values_list('criteria', flat=True).distinct().order_by('criteria'),
         'existing_documents': RequiredDocument.objects.values_list('document_name', flat=True).distinct().order_by('document_name'),
         'existing_key_points': KeyPoint.objects.values_list('point', flat=True).distinct().order_by('point'),
+        'existing_data_fields': RequiredDataField.objects.values('field_name', 'field_type').distinct().order_by('field_name'),
+        'document_types': DocumentType.objects.filter(is_active=True).order_by('name'),  # Add this line
     }
     return render(request, 'loan/add_new_loan.html', context)
 
@@ -290,7 +339,7 @@ def get_search_suggestions(request):
             full_name=Concat('name', Value(' - '), 'phone_number')
         ).filter(
             Q(name__icontains=query) |
-            Q(phone_number__icontains=query) |
+            Q(phone_number__icontains= query) |
             Q(reference_number__icontains=query) |
             Q(scheme__title__icontains=query)
         ).distinct()[:5]  # Limit to 5 suggestions

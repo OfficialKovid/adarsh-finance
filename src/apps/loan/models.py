@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.utils.text import slugify
 from django.conf import settings
+from apps.documents.models import RequiredDocument  # Add this import
 
 class LoanScheme(models.Model):
     title = models.CharField(max_length=255)
@@ -41,14 +42,6 @@ class EligibilityCriteria(models.Model):
 
     def __str__(self):
         return f"Eligibility for {self.scheme.title}"
-
-
-class RequiredDocument(models.Model):
-    scheme = models.ForeignKey(LoanScheme, related_name='required_documents', on_delete=models.CASCADE)
-    document_name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return f"{self.document_name} for {self.scheme.title}"
 
 
 class CoveredSector(models.Model):
@@ -138,4 +131,32 @@ class LoanApplication(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.scheme.title}"
+
+
+class RequiredDataField(models.Model):
+    FIELD_TYPES = [
+        ('text', 'Text'),
+        ('number', 'Number'),
+        ('email', 'Email'),
+        ('phone', 'Phone Number'),
+        ('date', 'Date'),
+        ('file', 'File Upload'),
+        ('address', 'Address'),
+        ('select', 'Select Options'),
+        ('radio', 'Radio Buttons'),
+        ('checkbox', 'Checkbox'),
+    ]
+
+    scheme = models.ForeignKey(LoanScheme, related_name='required_data_fields', on_delete=models.CASCADE)
+    field_name = models.CharField(max_length=100)
+    field_type = models.CharField(max_length=20, choices=FIELD_TYPES)
+    is_required = models.BooleanField(default=True)
+    display_order = models.PositiveIntegerField(default=0)
+    options = models.TextField(blank=True, null=True, help_text="Comma-separated options for select/radio/checkbox fields")
+
+    class Meta:
+        ordering = ['display_order']
+
+    def __str__(self):
+        return f"{self.field_name} ({self.field_type}) - {self.scheme.title}"
 
