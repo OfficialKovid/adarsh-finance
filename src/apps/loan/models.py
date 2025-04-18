@@ -3,6 +3,8 @@ from django.db import models
 from django.utils.text import slugify
 from django.conf import settings
 from apps.documents.models import RequiredDocument  # Add this import
+import random
+import string
 
 class LoanScheme(models.Model):
     title = models.CharField(max_length=255)
@@ -20,7 +22,18 @@ class LoanScheme(models.Model):
     # Optional: Auto-generate slug
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            # Generate base slug from title
+            base_slug = slugify(self.title)
+            
+            # Check if the slug exists
+            slug = base_slug
+            while LoanScheme.objects.filter(slug=slug).exists():
+                # Add random suffix
+                random_suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
+                slug = f"{base_slug}-{random_suffix}"
+            
+            self.slug = slug
+            
         super().save(*args, **kwargs)
 
     def __str__(self):

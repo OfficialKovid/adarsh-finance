@@ -27,101 +27,107 @@ def is_manager_user(user):
 @user_passes_test(is_manager_user, login_url='dashboard/staff-login/')
 def add_new_loan(request):
     if request.method == 'POST':
-        # Validate that at least one item exists in each section
-        sections = {
-            'benefits[]': 'benefits',
-            'criteria[]': 'eligibility criteria',
-            'documents[]': 'required documents',
-            'data_field_names[]': 'data fields',
-            'sectors[]': 'sectors'
-        }
+        try:
+            with transaction.atomic():
+                # Validate that at least one item exists in each section
+                sections = {
+                    'benefits[]': 'benefits',
+                    'criteria[]': 'eligibility criteria',
+                    'documents[]': 'required documents',
+                    'data_field_names[]': 'data fields',
+                    'sectors[]': 'sectors'
+                }
 
-        for field, name in sections.items():
-            values = [v.strip() for v in request.POST.getlist(field) if v.strip()]
-            if not values:
-                messages.error(request, f'Please add or select at least one {name}')
-                return redirect('add_new_loan')
+                for field, name in sections.items():
+                    values = [v.strip() for v in request.POST.getlist(field) if v.strip()]
+                    if not values:
+                        messages.error(request, f'Please add or select at least one {name}')
+                        return redirect('add_new_loan')
 
-        with transaction.atomic():
-            # Create new loan scheme
-            scheme = LoanScheme.objects.create(
-                title=request.POST['title'],
-                full_name=request.POST['full_name'],  # changed from short_name
-                description=request.POST['description'],
-                start_year=request.POST.get('start_year') or None,  # handle optional field
-                end_year=request.POST.get('end_year') or None,      # handle optional field
-                contact_info=request.POST['contact_info'],
-                image=request.FILES.get('image')
-            )
+                # Create new loan scheme
+                scheme = LoanScheme.objects.create(
+                    title=request.POST['title'],
+                    full_name=request.POST['full_name'],  # changed from short_name
+                    description=request.POST['description'],
+                    start_year=request.POST.get('start_year') or None,  # handle optional field
+                    end_year=request.POST.get('end_year') or None,      # handle optional field
+                    contact_info=request.POST['contact_info'],
+                    image=request.FILES.get('image')
+                )
 
-            # Add sectors
-            sectors = request.POST.get('sectors[]', '').split(',')
-            for sector in sectors:
-                if sector:
-                    CoveredSector.objects.create(
-                        scheme=scheme,
-                        sector_name=sector
-                    )
+                # Add sectors
+                sectors = request.POST.get('sectors[]', '').split(',')
+                for sector in sectors:
+                    if sector:
+                        CoveredSector.objects.create(
+                            scheme=scheme,
+                            sector_name=sector
+                        )
 
-            # Add benefits
-            benefits = request.POST.getlist('benefits[]')
-            for benefit in benefits:
-                if benefit:
-                    Benefit.objects.create(scheme=scheme, description=benefit)
+                # Add benefits
+                benefits = request.POST.getlist('benefits[]')
+                for benefit in benefits:
+                    if benefit:
+                        Benefit.objects.create(scheme=scheme, description=benefit)
 
-            # Add eligibility criteria
-            criteria_list = request.POST.getlist('criteria[]')
-            for criteria in criteria_list:
-                if criteria:
-                    EligibilityCriteria.objects.create(scheme=scheme, criteria=criteria)
+                # Add eligibility criteria
+                criteria_list = request.POST.getlist('criteria[]')
+                for criteria in criteria_list:
+                    if criteria:
+                        EligibilityCriteria.objects.create(scheme=scheme, criteria=criteria)
 
-            # Update document creation
-            documents = request.POST.getlist('documents[]')
-            document_types = request.POST.getlist('document_types[]')
-            
-            for i, doc in enumerate(documents):
-                if doc:
-                    doc_type_id = document_types[i] if i < len(document_types) else 1  # Default to first type (PDF)
-                    RequiredDocument.objects.create(
-                        scheme=scheme,
-                        document_name=doc,
-                        document_type_id=doc_type_id
-                    )
+                # Update document creation
+                documents = request.POST.getlist('documents[]')
+                document_types = request.POST.getlist('document_types[]')
+                
+                for i, doc in enumerate(documents):
+                    if doc:
+                        doc_type_id = document_types[i] if i < len(document_types) else 1  # Default to first type (PDF)
+                        RequiredDocument.objects.create(
+                            scheme=scheme,
+                            document_name=doc,
+                            document_type_id=doc_type_id
+                        )
 
-            # Add key points
-            key_points = request.POST.getlist('key_points[]')
-            for i, point in enumerate(key_points[:3]):  # Limit to 3 points
-                if point:
-                    KeyPoint.objects.create(
-                        scheme=scheme,
-                        point=point,
-                        display_order=i
-                    )
+                # Add key points
+                key_points = request.POST.getlist('key_points[]')
+                for i, point in enumerate(key_points[:3]):  # Limit to 3 points
+                    if point:
+                        KeyPoint.objects.create(
+                            scheme=scheme,
+                            point=point,
+                            display_order=i
+                        )
 
-            # Add required data fields
-            field_names = request.POST.getlist('data_field_names[]')
-            field_types = request.POST.getlist('data_field_types[]')
-            field_required = request.POST.getlist('data_field_required[]')
-            field_options = request.POST.getlist('data_field_options[]')
+                # Add required data fields
+                field_names = request.POST.getlist('data_field_names[]')
+                field_types = request.POST.getlist('data_field_types[]')
+                field_required = request.POST.getlist('data_field_required[]')
+                field_options = request.POST.getlist('data_field_options[]')
 
-            for i, (name, type_) in enumerate(zip(field_names, field_types)):
-                if name and type_:
-                    is_required = 'on' in (field_required[i] if i < len(field_required) else 'on')
-                    options = field_options[i] if i < len(field_options) else None
-                    
-                    if type_ in ['select', 'radio', 'checkbox'] and not options:
-                        options = ''  # Ensure options is not None for these field types
+                for i, (name, type_) in enumerate(zip(field_names, field_types)):
+                    if name and type_:
+                        is_required = 'on' in (field_required[i] if i < len(field_required) else 'on')
+                        options = field_options[i] if i < len(field_options) else None
                         
-                    RequiredDataField.objects.create(
-                        scheme=scheme,
-                        field_name=name,
-                        field_type=type_,
-                        is_required=is_required,
-                        display_order=i,
-                        options=options
-                    )
+                        if type_ in ['select', 'radio', 'checkbox'] and not options:
+                            options = ''  # Ensure options is not None for these field types
+                            
+                        RequiredDataField.objects.create(
+                            scheme=scheme,
+                            field_name=name,
+                            field_type=type_,
+                            is_required=is_required,
+                            display_order=i,
+                            options=options
+                        )
 
-        return redirect('list_loans')
+                messages.success(request, 'Loan scheme created successfully')
+                return redirect('list_loans')
+                
+        except Exception as e:
+            messages.error(request, f'Error creating loan scheme: {str(e)}')
+            return redirect('add_new_loan')
 
     # Fetch all existing items
     context = {
