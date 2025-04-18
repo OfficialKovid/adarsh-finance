@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from apps.accounts.views import agent_required, manager_required
 from django.contrib.auth import get_user_model
 from apps.loan.models import LoanApplication
-from django.db.models import Count, Avg, Case, When, FloatField
+from django.db.models import Count, Avg, Case, When, FloatField, Q
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 def dashboard(request):
@@ -23,7 +23,7 @@ def agent_dashboard(request):
         'role': 'Agent',
         'name': request.user.get_full_name() or request.user.email,
     }
-    return render(request, "dashboard/agent_dashboard.html", context)
+    return render(request, "dashboard/agent/agent_dashboard.html", context)
 
 @login_required(login_url='/dashboard/staff-login/')
 @manager_required
@@ -159,3 +159,48 @@ def add_agent(request):
             'status': 'error',
             'message': str(e)
         }, status=500)
+
+@login_required(login_url='/dashboard/staff-login/')
+@agent_required
+def assigned_applications(request):
+    # Get applications assigned to the current agent
+    applications = LoanApplication.objects.filter(assigned_agent=request.user)
+    
+    # Get status choices directly from the model field
+    status_choices = [
+        {'value': status[0], 'label': status[1]} 
+        for status in LoanApplication._meta.get_field('status').choices 
+        if status[0] in ['assigned', 'detail_collection', 'form_filled', 'under_review', 'closed', 'dropped']
+    ]
+    
+    # Handle search
+    search_query = request.GET.get('search', '')
+    if search_query:
+        applications = applications.filter(
+            Q(name__icontains=search_query) |
+            Q(phone_number__icontains=search_query) |
+            Q(reference_number__icontains=search_query) |
+            Q(scheme__title__icontains=search_query)
+        )
+        search_count = applications.count()
+    else:
+        search_count = None
+
+    # Get counts for different statuses
+    status_counts = {
+        'all_applications': applications.count(),
+        'new_leads': applications.filter(status='new_lead').count(),
+        'processing': applications.filter(status__in=['assigned', 'detail_collection', 'form_filled', 'under_review']).count(),
+        'completed': applications.filter(status='closed').count(),
+        'rejected': applications.filter(status__in=['dropped', 'not_converted']).count(),
+    }
+
+    context = {
+        'applications': applications,
+        'search_query': search_query,
+        'search_count': search_count,
+        'status_choices': status_choices,  # Add status choices to context
+        **status_counts,
+    }
+    
+    return render(request, 'dashboard/agent/assigned_application.html', context)

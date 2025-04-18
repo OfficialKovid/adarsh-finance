@@ -1,0 +1,291 @@
+{% extends 'dashboard/agent/base_agent.html' %}
+
+{% block title %}My Assigned Applications - Adarsh Finance{% endblock %}
+
+{% block header_text %}
+<h1>My Assigned Applications</h1>
+<p>Manage your assigned loan applications</p>
+{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="search-filter-container">
+        <div class="search-box">
+            <form method="GET" action="." class="search-form" id="searchForm">
+                <input type="text" 
+                       name="search" 
+                       id="searchInput" 
+                       class="form-control" 
+                       placeholder="Search by name, phone, reference number or scheme..."
+                       value="{{ search_query }}"
+                       autocomplete="off">
+                <button type="submit" class="search-btn">Search</button>
+                {% if search_query %}
+                    <a href="." class="clear-search">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+        <select class="form-select status-filter" id="statusFilter">
+            <option value="">All Status</option>
+            {% for status in status_choices %}
+            <option value="{{ status.value }}">{{ status.label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Applications</h3>
+            <div class="stat-value">{{ all_applications }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Processing</h3>
+            <div class="stat-value">{{ processing }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Completed</h3>
+            <div class="stat-value">{{ completed }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Rejected</h3>
+            <div class="stat-value">{{ rejected }}</div>
+        </div>
+    </div>
+
+    <!-- Applications Table -->
+    <div class="applications-table">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Scheme</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for application in applications %}
+                <tr data-application-id="{{ application.id }}" data-status="{{ application.status }}">
+                    <td>{{ application.reference_number }}</td>
+                    <td>{{ application.name }}</td>
+                    <td>{{ application.phone_number }}</td>
+                    <td>{{ application.scheme.title }}</td>
+                    <td>
+                        <span class="status-badge status-{{ application.status }}">
+                            {{ application.get_status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No applications assigned yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .search-filter-container {
+        display: flex;
+        align-items: start;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .search-box {
+        flex: 1;
+    }
+
+    .search-form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .search-form input[type="text"] {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+
+    .form-select.status-filter {
+        min-width: 150px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .data-table th {
+        background: var(--primary-color);
+        color: white;
+        text-align: left;
+    }
+
+    .data-table tr:hover {
+        background: rgba(52, 152, 219, 0.05);
+    }
+
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.9em;
+    }
+
+    .status-new_lead { background: #b8daff; color: #004085; }
+    .status-assigned { background: #d4edda; color: #155724; }
+    .status-detail_collection { background: #fff3cd; color: #856404; }
+    .status-form_filled { background: #d1ecf1; color: #0c5460; }
+    .status-under_review { background: #e2e3e5; color: #383d41; }
+    .status-closed { background: #c3e6cb; color: #155724; }
+    .status-dropped { background: #f5c6cb; color: #721c24; }
+
+    .action-btn {
+        min-width: 120px;
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        background: white;
+        font-size: 0.9em;
+        cursor: pointer;
+    }
+
+    .action-btn:hover {
+        border-color: var(--primary-color);
+    }
+
+    .action-btn:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.25);
+    }
+
+    .search-box {
+        margin-bottom: 20px;
+    }
+    
+    .search-form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .search-form input[type="text"] {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+    
+    .search-btn {
+        padding: 10px 20px;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    .clear-search {
+        padding: 10px 15px;
+        color: #666;
+        text-decoration: none;
+    }
+    
+    .clear-search:hover {
+        text-decoration: underline;
+    }
+    
+    .search-results-info {
+        margin-top: 10px;
+        padding: 10px;
+        background: #e9ecef;
+        border-radius: 5px;
+        color: #495057;
+    }
+
+    .notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 4px;
+        color: white;
+        font-size: 14px;
+        transform: translateY(100px);
+        transition: transform 0.3s ease-in-out;
+        z-index: 1000;
+        max-width: 300px;
+    }
+
+    .notification.success {
+        background-color: #28a745;
+    }
+
+    .notification.error {
+        background-color: #dc3545;
+    }
+
+    .notification.show {
+        transform: translateY(0);
+    }
+</style>
+
+<div id="notification" class="notification"></div>
+
+{% block extra_js %}
+<script>
+    // Add status filter functionality
+    document.getElementById('statusFilter').addEventListener('change', function() {
+        const selectedStatus = this.value;
+        const rows = document.querySelectorAll('.data-table tbody tr');
+        
+        rows.forEach(row => {
+            if (!selectedStatus || row.dataset.status === selectedStatus) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Existing search functionality
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const searchText = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('.data-table tbody tr');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const match = text.includes(searchText);
+            if (match && (
+                !document.getElementById('statusFilter').value || 
+                row.dataset.status === document.getElementById('statusFilter').value
+            )) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}
