@@ -1,11 +1,15 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from apps.accounts.views import agent_required, manager_required
 from django.contrib.auth import get_user_model
 from apps.loan.models import LoanApplication
+from apps.customer.models import FormSubmission  # Updated this import
 from django.db.models import Count, Avg, Case, When, FloatField, Q
 from django.views.decorators.csrf import ensure_csrf_cookie
+import logging
+
+logger = logging.getLogger(__name__)
 
 def dashboard(request):
     if request.user.is_authenticated:
@@ -204,3 +208,37 @@ def assigned_applications(request):
     }
     
     return render(request, 'dashboard/agent/assigned_application.html', context)
+
+@login_required(login_url='/dashboard/staff-login/')
+@agent_required
+def see_application_details(request, application_id):
+    logger.debug(f'Accessing application details for ID: {application_id}')  # Debug log
+    
+    try:
+        # Get application and related form submission
+        application = get_object_or_404(
+            LoanApplication.objects.select_related('scheme', 'user'),
+            id=application_id,
+            assigned_agent=request.user
+        )
+        logger.debug(f'Found application: {application.reference_number}')  # Debug log
+        
+        # Get form submission data
+        form_submission = FormSubmission.objects.filter(application=application).first()
+        logger.debug(f'Form submission found: {bool(form_submission)}')  # Debug log
+        
+        # Get scheme's required fields
+        form_fields = application.scheme.required_data_fields.all().order_by('display_order')
+        
+        context = {
+            'application': application,
+            'form_data': form_submission.data if form_submission else None,
+            'files': form_submission.files if form_submission else None,
+            'form_fields': form_fields,
+        }
+        
+        return render(request, 'dashboard/agent/see_application_details.html', context)
+        
+    except Exception as e:
+        logger.error(f'Error in see_application_details: {str(e)}')  # Error log
+        raise

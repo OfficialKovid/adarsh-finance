@@ -87,11 +87,17 @@
                         <a href="{% url 'account' %}">
                             <i class="fas fa-user"></i> My Account
                         </a>
+                        {% if has_application %}
+                            <a href="{% url 'customer:fill_form' active_scheme.slug %}">
+                                <i class="fas fa-file-alt"></i> Fill Form
+                            </a>
+                        {% else %}
+                            <a href="{% url 'list_loans' %}">
+                                <i class="fas fa-hand-holding-usd"></i> Apply for Loan
+                            </a>
+                        {% endif %}
                         <a href="#">
                             <i class="fas fa-tasks"></i> Loan Status
-                        </a>
-                        <a href="#">
-                            <i class="fas fa-file-alt"></i> Fill Form
                         </a>
                         <a href="{% url 'logout' %}">
                             <i class="fas fa-sign-out-alt"></i> Logout

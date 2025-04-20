@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from apps.loan.models import LoanApplication
+from django.db.models import Q
 
 def signup(request):
     if request.user.is_authenticated:
@@ -37,10 +38,12 @@ def signup(request):
                 password=password,
                 first_name=application.name.split()[0],
                 last_name=application.name.split()[-1] if len(application.name.split()) > 1 else "",
-                phone_number=application.phone_number
+                phone_number=application.phone_number,
+                reference_number=reference_number  # Add this line
             )
             
-            # Mark the reference number as used
+            # Link user to application
+            application.user = user
             application.is_registered = True
             application.save()
             
@@ -127,7 +130,16 @@ def manager_required(view_func):
 
 @login_required(login_url='/login/')
 def account(request):
-    return render(request, "accounts/account.html")
+    # Get the user's latest application where they are either the applicant or assigned agent
+    latest_application = LoanApplication.objects.filter(
+        Q(assigned_agent=request.user) | Q(name=request.user.get_full_name())
+    ).first()
+    
+    context = {
+        'user': request.user,
+        'application': latest_application,
+    }
+    return render(request, 'accounts/account.html', context)
 
 def logout_user(request):
     # Store the role before logout since we'll lose it after logout
@@ -137,3 +149,29 @@ def logout_user(request):
     if is_staff:
         return redirect('staff-login')
     return redirect('login')
+
+from apps.loan.models import LoanApplication
+
+def register_user(request):
+    if request.method == 'POST':
+        form = RegistrationForm(request.POST)
+        if form.is_valid():
+            reference_number = form.cleaned_data['reference_number']
+            
+            # Get application by reference number
+            application = LoanApplication.get_by_reference(reference_number)
+            if not application:
+                form.add_error('reference_number', 'Invalid or already registered reference number')
+                return render(request, 'accounts/register.html', {'form': form})
+            
+            # Create user
+            user = form.save()
+            
+            # Link application to user
+            application.user = user
+            application.is_registered = True
+            application.save()
+            
+            # Log user in
+            login(request, user)
+            return redirect('home_page')

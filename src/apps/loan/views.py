@@ -149,7 +149,8 @@ def loan_details(request, slug):
         'criteria': loan.eligibility_criteria.all(),
         'documents': loan.required_documents.all(),
         'sectors': loan.covered_sectors.all(),
-        'key_points': loan.key_points.all()[:3]
+        'key_points': loan.key_points.all()[:3],
+        'can_fill_form': request.user.is_authenticated
     }
     return render(request, 'loan/loan_details.html', context)
 
@@ -161,7 +162,8 @@ def apply_loan(request, slug):
             name=request.POST['name'],
             phone_number=request.POST['phone_number'],
             scheme=loan,
-            status='new_lead'  # Explicitly set status to new_lead
+            status='new_lead',
+            user=request.user if request.user.is_authenticated else None
         )
         return JsonResponse({'status': 'success'})
     except Exception as e:

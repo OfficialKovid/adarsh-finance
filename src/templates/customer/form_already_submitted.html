@@ -1,0 +1,32 @@
+{% extends 'base/base-website.html' %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="card">
+        <div class="card-body text-center">
+            <i class="fas fa-check-circle text-success" style="font-size: 48px;"></i>
+            <h2 class="mt-3">Form Already Submitted</h2>
+            <p class="lead">You have already submitted your application for {{ scheme.title }}</p>
+            <p>Reference Number: {{ submission.application.reference_number }}</p>
+            <p>Submitted on: {{ submission.submitted_at|date:"F d, Y" }}</p>
+            <p>Current Status: {{ submission.application.get_status_display }}</p>
+            <a href="{% url 'account' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-user"></i> Go to My Account
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .card-body {
+        padding: 3rem;
+    }
+    .text-success {
+        color: #28a745;
+    }
+</style>
+{% endblock %}

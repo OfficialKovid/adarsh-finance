@@ -1,0 +1,215 @@
+{% extends 'base/base-website.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Fill Application Form - {{ scheme.title }}{% endblock %}
+
+{% block head %}
+<style>
+    .form-section {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+
+    .form-group.required label:after {
+        content: "*";
+        color: red;
+        margin-left: 4px;
+    }
+
+    .file-input-wrapper {
+        position: relative;
+        margin-top: 0.5rem;
+    }
+
+    .file-preview {
+        margin-top: 0.5rem;
+        display: none;
+    }
+
+    .submit-btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+        font-size: 1.1rem;
+        margin-top: 1rem;
+    }
+
+    .submit-btn:hover {
+        background: #0056b3;
+    }
+
+    .error-message {
+        color: red;
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+
+    .success-message {
+        color: green;
+        text-align: center;
+        padding: 1rem;
+        background: #e8f5e9;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-section">
+    <div class="form-header">
+        <h1>{{ scheme.title }}</h1>
+        <p>Please fill in the required information</p>
+    </div>
+
+    {% if success_message %}
+    <div class="success-message">
+        {{ success_message }}
+    </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" id="applicationForm">
+        {% csrf_token %}
+        
+        {% for field in form_fields %}
+        <div class="form-group {% if field.is_required %}required{% endif %}">
+            <label for="{{ field.field_name }}">{{ field.field_name }}</label>
+            
+            {% if field.field_type == 'text' %}
+                <input type="text" id="{{ field.field_name }}" name="{{ field.field_name }}" 
+                       {% if field.is_required %}required{% endif %}>
+            
+            {% elif field.field_type == 'number' %}
+                <input type="number" id="{{ field.field_name }}" name="{{ field.field_name }}"
+                       {% if field.is_required %}required{% endif %}>
+            
+            {% elif field.field_type == 'email' %}
+                <input type="email" id="{{ field.field_name }}" name="{{ field.field_name }}"
+                       {% if field.is_required %}required{% endif %}>
+            
+            {% elif field.field_type == 'phone' %}
+                <input type="tel" id="{{ field.field_name }}" name="{{ field.field_name }}"
+                       pattern="[0-9]{10}" title="Please enter a valid 10-digit phone number"
+                       {% if field.is_required %}required{% endif %}>
+            
+            {% elif field.field_type == 'date' %}
+                <input type="date" id="{{ field.field_name }}" name="{{ field.field_name }}"
+                       {% if field.is_required %}required{% endif %}>
+            
+            {% elif field.field_type == 'file' %}
+                <div class="file-input-wrapper">
+                    <input type="file" id="{{ field.field_name }}" name="{{ field.field_name }}"
+                           accept=".pdf,.jpg,.jpeg,.png"
+                           {% if field.is_required %}required{% endif %}>
+                    <div class="file-preview" id="{{ field.field_name }}_preview"></div>
+                </div>
+            
+            {% elif field.field_type == 'select' %}
+                <select id="{{ field.field_name }}" name="{{ field.field_name }}"
+                        {% if field.is_required %}required{% endif %}>
+                    <option value="">Select an option</option>
+                    {% with options=field.options|split:',' %}
+                        {% for option in options %}
+                            <option value="{{ option }}">{{ option }}</option>
+                        {% endfor %}
+                    {% endwith %}
+                </select>
+            
+            {% elif field.field_type == 'textarea' %}
+                <textarea id="{{ field.field_name }}" name="{{ field.field_name }}" rows="4"
+                          {% if field.is_required %}required{% endif %}></textarea>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="submit-btn">Submit Application</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    document.getElementById('applicationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('{% url "customer:submit_form" scheme.slug %}', {  // Updated this line
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.href = data.redirect_url;
+            } else {
+                alert(data.message || 'An error occurred. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    });
+
+    // Preview file uploads
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.addEventListener('change', function() {
+            const preview = document.getElementById(`${this.id}_preview`);
+            const file = this.files[0];
+            if (file) {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.innerHTML = `<img src="${e.target.result}" style="max-width: 200px">`;
+                        preview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.innerHTML = `<p>Selected file: ${file.name}</p>`;
+                    preview.style.display = 'block';
+                }
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

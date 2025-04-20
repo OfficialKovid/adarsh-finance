@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'apps.loan.apps.LoanConfig',
     'apps.dashboard.apps.DashboardConfig',
     'apps.documents.apps.DocumentsConfig',
+    'apps.customer.apps.CustomerConfig',
 ]
 
 
@@ -75,6 +76,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.loan.context_processors.loan_status',
             ],
         },
     },

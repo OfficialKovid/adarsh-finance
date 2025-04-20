@@ -5,7 +5,7 @@
 {% block header_text %}
 <h1>My Assigned Applications</h1>
 <p>Manage your assigned loan applications</p>
-{% endblock %}
+{% endblock header_text %}
 
 {% block content %}
 <div class="content-card">
@@ -67,26 +67,28 @@
             </thead>
             <tbody>
                 {% for application in applications %}
-                <tr data-application-id="{{ application.id }}" data-status="{{ application.status }}">
-                    <td>{{ application.reference_number }}</td>
-                    <td>{{ application.name }}</td>
-                    <td>{{ application.phone_number }}</td>
-                    <td>{{ application.scheme.title }}</td>
-                    <td>
-                        <span class="status-badge status-{{ application.status }}">
-                            {{ application.get_status_display }}
-                        </span>
-                    </td>
-                </tr>
+                    <tr onclick="window.location='{% url 'dashboard:see-application-details' application.id %}'"
+                        class="application-row"
+                        style="cursor: pointer;">
+                        <td>{{ application.reference_number }}</td>
+                        <td>{{ application.name }}</td>
+                        <td>{{ application.phone_number }}</td>
+                        <td>{{ application.scheme.title }}</td>
+                        <td>
+                            <span class="status-badge status-{{ application.status }}">
+                                {{ application.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
                 {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center">No applications assigned yet.</td>
-                </tr>
+                    <tr><td colspan="5">No applications found</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+<div id="notification" class="notification"></div>
 
 <style>
     .search-filter-container {
@@ -250,10 +252,13 @@
     }
 </style>
 
-<div id="notification" class="notification"></div>
+{% endblock content %}
 
-{% block extra_js %}
+{% block js %}
 <script>
+    // Just keep the filter and search functionality
+    // Remove all the click handling code since we're using onclick directly
+
     // Add status filter functionality
     document.getElementById('statusFilter').addEventListener('change', function() {
         const selectedStatus = this.value;
@@ -286,6 +291,8 @@
             }
         });
     });
+
+    // Add this console log to debug
+    console.log('JavaScript loaded');
 </script>
-{% endblock %}
-{% endblock %}
+{% endblock js %}

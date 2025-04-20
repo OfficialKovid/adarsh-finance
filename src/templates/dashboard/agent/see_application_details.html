@@ -1,0 +1,114 @@
+{% extends 'dashboard/agent/base_agent.html' %}
+{% load dashboard_filters %}
+
+{% block title %}Application Details{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="header">
+        <h2>Application Details</h2>
+        <div class="meta">
+            <span class="ref">Ref: {{ application.reference_number }}</span>
+            <span class="status status-{{ application.status }}">
+                {{ application.get_status_display }}
+            </span>
+        </div>
+    </div>
+
+    <div class="details-section">
+        <h3>Basic Information</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <label>Applicant Name</label>
+                <span>{{ application.name }}</span>
+            </div>
+            <div class="info-item">
+                <label>Phone Number</label>
+                <span>{{ application.phone_number }}</span>
+            </div>
+            <div class="info-item">
+                <label>Applied For</label>
+                <span>{{ application.scheme.title }}</span>
+            </div>
+            <div class="info-item">
+                <label>Application Date</label>
+                <span>{{ application.applied_at|date:"d M Y" }}</span>
+            </div>
+        </div>
+    </div>
+
+    {% if form_data %}
+    <div class="form-section">
+        <h3>Form Submission Details</h3>
+        {% for field in form_fields %}
+        <div class="form-field">
+            <label>{{ field.field_name }}</label>
+            {% if field.field_type == 'file' %}
+                {% if files|get_item:field.field_name %}
+                    <a href="{{ files|get_item:field.field_name }}" class="file-link" target="_blank">View File</a>
+                {% else %}
+                    <span class="no-file">No file uploaded</span>
+                {% endif %}
+            {% else %}
+                <span>{{ form_data|get_item:field.field_name }}</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-data">
+        <p>No form data submitted yet.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .content-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin: 20px;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin: 15px 0;
+    }
+
+    .info-item label {
+        display: block;
+        color: #666;
+        margin-bottom: 5px;
+    }
+
+    .form-field {
+        background: #f8f9fa;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 6px;
+    }
+
+    .file-link {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .status {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.9em;
+    }
+</style>
+{% endblock %}

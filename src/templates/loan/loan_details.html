@@ -401,10 +401,31 @@
 
     <!-- Apply Button -->
     <div class="text-center" data-aos="fade-up">
-        <button type="button" class="apply-btn" onclick="openModal('applyModal')">
-            Apply Now
-            <i class="fas fa-arrow-right"></i>
-        </button>
+        {% if user.is_authenticated %}
+            {% if has_application %}
+                {% if active_scheme.slug == loan.slug %}
+                    <a href="{% url 'customer:fill_form' loan.slug %}" class="apply-btn">
+                        Fill Form
+                        <i class="fas fa-file-alt"></i>
+                    </a>
+                {% else %}
+                    <button type="button" class="apply-btn" disabled style="background-color: #ccc;">
+                        Already Applied for Another Loan
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                {% endif %}
+            {% else %}
+                <button type="button" class="apply-btn" onclick="openModal('applyModal')">
+                    Apply Now
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            {% endif %}
+        {% else %}
+            <button type="button" class="apply-btn" onclick="openModal('applyModal')">
+                Apply Now
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        {% endif %}
     </div>
 </div>
 

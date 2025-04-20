@@ -26,6 +26,7 @@ class MyUser(AbstractUser):
     
     username = None
     email = models.EmailField(unique=True)
+    reference_number = models.CharField(max_length=50, blank=True, null=True)
     first_name = models.CharField(max_length=30, default='')
     last_name = models.CharField(max_length=30, default='')
     phone_number = models.CharField(max_length=15, default='')

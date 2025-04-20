@@ -114,6 +114,13 @@ class LoanApplication(models.Model):
         blank=True,
         related_name='assigned_applications'
     )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='user_applications'
+    )
 
     class Meta:
         ordering = ['-applied_at']
@@ -126,14 +133,20 @@ class LoanApplication(models.Model):
         super().save(*args, **kwargs)
 
     @classmethod
+    def get_active_application(cls, user):
+        """Get user's active loan application"""
+        return cls.objects.filter(
+            user=user,
+            status__in=['new_lead', 'assigned', 'detail_collection', 'form_filled', 'under_review']
+        ).select_related('scheme').first()
+
+    @classmethod
     def get_by_reference(cls, reference_number):
-        try:
-            application = cls.objects.get(reference_number=reference_number)
-            if application.is_registered:
-                return None  # Return None if already registered
-            return application
-        except cls.DoesNotExist:
-            return None
+        """Get application by reference number only if it's not already registered"""
+        return cls.objects.filter(
+            reference_number=reference_number,
+            is_registered=False
+        ).first()
 
     @classmethod
     def get_status_choices(cls):
