@@ -3,6 +3,11 @@
 
 {% block title %}Application Details{% endblock %}
 
+{% block head %}
+<!-- Add SweetAlert2 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+{% endblock %}
+
 {% block content %}
 <div class="content-card">
     <div class="header">
@@ -64,27 +69,29 @@
         
         {% if application.loan_application_number or application.loan_username or application.loan_password or application.report %}
             <div class="credentials-display" id="credentialsDisplay">
-                <div class="credential-item">
-                    <label>Application Number</label>
-                    <p>{{ application.loan_application_number|default:"Not set" }}</p>
-                </div>
-                <div class="credential-item">
-                    <label>Username</label>
-                    <p>{{ application.loan_username|default:"Not set" }}</p>
-                </div>
-                <div class="credential-item">
-                    <label>Password</label>
-                    <p>{{ decrypted_password|default:"Not set" }}</p>
-                </div>
-                <div class="credential-item">
-                    <label>Report</label>
-                    {% if application.report %}
-                        <a href="{{ application.report.url }}" class="report-link" target="_blank">
-                            <i class="fas fa-file-pdf"></i> View Report
-                        </a>
-                    {% else %}
-                        <p>No report uploaded</p>
-                    {% endif %}
+                <div class="credentials-grid">
+                    <div class="credential-item">
+                        <label>Application Number</label>
+                        <p>{{ application.loan_application_number|default:"Not set" }}</p>
+                    </div>
+                    <div class="credential-item">
+                        <label>Username</label>
+                        <p>{{ application.loan_username|default:"Not set" }}</p>
+                    </div>
+                    <div class="credential-item">
+                        <label>Password</label>
+                        <p>{{ decrypted_password|default:"Not set" }}</p>
+                    </div>
+                    <div class="credential-item">
+                        <label>Report</label>
+                        {% if application.report %}
+                            <a href="{{ application.report.url }}" class="report-link" target="_blank">
+                                <i class="fas fa-file-pdf"></i> View Report
+                            </a>
+                        {% else %}
+                            <p>No report uploaded</p>
+                        {% endif %}
+                    </div>
                 </div>
                 
                 <button type="button" class="btn btn-primary edit-btn" onclick="toggleEditMode()">
@@ -92,36 +99,38 @@
                 </button>
             </div>
             
-            <form method="POST" id="credentialsForm" enctype="multipart/form-data" style="display: none;">
+            <form method="POST" id="credentialsForm" enctype="multipart/form-data" style="display: none;" class="credentials-form">
                 {% csrf_token %}
-                <div class="form-group">
-                    <label>Application Number</label>
-                    <input type="text" name="loan_application_number" 
-                           value="{{ application.loan_application_number|default:'' }}" 
-                           class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" name="loan_username" 
-                           value="{{ application.loan_username|default:'' }}" 
-                           class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="text" name="loan_password" 
-                           value="{{ decrypted_password|default:'' }}" 
-                           class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Report (PDF only)</label>
-                    {% if application.report %}
-                        <div class="current-report">
-                            <a href="{{ application.report.url }}" target="_blank" class="btn btn-sm btn-info">
-                                <i class="fas fa-file-pdf"></i> View Current Report
-                            </a>
-                        </div>
-                    {% endif %}
-                    <input type="file" name="report" class="form-control" accept=".pdf">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Application Number</label>
+                        <input type="text" name="loan_application_number" 
+                               value="{{ application.loan_application_number|default:'' }}" 
+                               class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" name="loan_username" 
+                               value="{{ application.loan_username|default:'' }}" 
+                               class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="text" name="loan_password" 
+                               value="{{ decrypted_password|default:'' }}" 
+                               class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Report (PDF only)</label>
+                        {% if application.report %}
+                            <div class="current-report">
+                                <a href="{{ application.report.url }}" target="_blank" class="btn btn-sm btn-info">
+                                    <i class="fas fa-file-pdf"></i> View Current Report
+                                </a>
+                            </div>
+                        {% endif %}
+                        <input type="file" name="report" class="form-control" accept=".pdf">
+                    </div>
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -129,38 +138,33 @@
                 </div>
             </form>
         {% else %}
-            <form method="POST" id="credentialsForm" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label>Application Number</label>
-                    <input type="text" name="loan_application_number" 
-                           value="{{ application.loan_application_number|default:'' }}" 
-                           class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" name="loan_username" 
-                           value="{{ application.loan_username|default:'' }}" 
-                           class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="text" name="loan_password" 
-                           value="{{ decrypted_password|default:'' }}" 
-                           class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Report (PDF only)</label>
-                    {% if application.report %}
-                        <div class="current-report">
-                            <a href="{{ application.report.url }}" target="_blank" class="btn btn-sm btn-info">
-                                <i class="fas fa-file-pdf"></i> View Current Report
-                            </a>
+            <div class="credentials-form-wrapper">
+                <p class="info-text">No credentials have been set yet. Please fill in the details below:</p>
+                <form method="POST" id="credentialsForm" enctype="multipart/form-data" class="credentials-form">
+                    {% csrf_token %}
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Application Number</label>
+                            <input type="text" name="loan_application_number" class="form-control" required>
                         </div>
-                    {% endif %}
-                    <input type="file" name="report" class="form-control" accept=".pdf">
-                </div>
-                <button type="submit" class="btn btn-primary">Save Credentials</button>
-            </form>
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" name="loan_username" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="text" name="loan_password" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Report (PDF only)</label>
+                            <input type="file" name="report" class="form-control" accept=".pdf" required>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save Credentials</button>
+                    </div>
+                </form>
+            </div>
         {% endif %}
     </div>
 
@@ -187,6 +191,7 @@
             <p class="no-docs">No documents uploaded yet.</p>
         {% endif %}
     </div>
+
 </div>
 
 <style>
@@ -239,64 +244,76 @@
     }
 
     .documents-section {
-        margin-top: 30px;
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 8px;
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .documents-section h3 {
+        color: #1e3c72;
+        margin-bottom: 25px;
+        font-size: 1.5rem;
     }
 
     .documents-grid {
         display: grid;
-        gap: 15px;
-        margin-top: 15px;
+        gap: 20px;
     }
 
     .document-item {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: white;
-        padding: 15px;
-        border-radius: 6px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .document-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
 
     .doc-info {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 15px;
     }
 
     .doc-info i {
         color: #007bff;
-        font-size: 1.2em;
+        font-size: 1.4em;
     }
 
     .doc-name {
         font-weight: 500;
+        color: #2c3e50;
     }
 
     .doc-actions {
         display: flex;
         align-items: center;
-        gap: 15px;
+        gap: 20px;
     }
 
     .doc-link {
         display: inline-flex;
         align-items: center;
-        gap: 5px;
-        color: #007bff;
+        gap: 8px;
+        padding: 8px 16px;
+        background: #007bff;
+        color: white;
         text-decoration: none;
-        padding: 5px 10px;
-        border: 1px solid #007bff;
-        border-radius: 4px;
-        transition: all 0.2s ease;
+        border-radius: 6px;
+        transition: all 0.3s ease;
     }
 
     .doc-link:hover {
-        background: #007bff;
-        color: white;
+        background: #0056b3;
+        transform: translateY(-2px);
     }
 
     .upload-date {
@@ -307,7 +324,10 @@
     .no-docs {
         text-align: center;
         color: #666;
-        padding: 20px;
+        padding: 30px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        font-size: 1.1em;
     }
 
     .current-report {
@@ -332,28 +352,34 @@
 
     .credentials-display {
         background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
+        padding: 25px;
+        border-radius: 12px;
         margin-bottom: 20px;
     }
 
     .credential-item {
-        margin-bottom: 15px;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
     }
 
     .credential-item label {
         display: block;
         color: #666;
         font-size: 0.9rem;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
+        font-weight: 500;
     }
 
     .credential-item p {
-        padding: 10px;
-        background: white;
-        border-radius: 4px;
         margin: 0;
-        border: 1px solid #dee2e6;
+        color: #333;
+        font-size: 1rem;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        border: 1px solid #e9ecef;
     }
 
     .report-link {
@@ -364,13 +390,14 @@
         background: #007bff;
         color: white;
         text-decoration: none;
-        border-radius: 4px;
+        border-radius: 6px;
         transition: all 0.3s ease;
     }
 
     .report-link:hover {
         background: #0056b3;
         color: white;
+        transform: translateY(-2px);
     }
 
     .edit-btn {
@@ -393,9 +420,14 @@
     }
 
     .form-actions {
-        margin-top: 20px;
         display: flex;
-        gap: 10px;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .form-actions .btn {
+        min-width: 120px;
+        justify-content: center;
     }
 
     .btn-secondary {
@@ -409,6 +441,114 @@
 
     .btn-secondary:hover {
         background: #5a6268;
+    }
+
+    .form-section {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .form-section h3 {
+        color: #1e3c72;
+        margin-bottom: 25px;
+        font-size: 1.5rem;
+    }
+
+    .credentials-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .credentials-form {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 12px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    .form-group label {
+        display: block;
+        color: #495057;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: border-color 0.15s ease-in-out;
+    }
+
+    .form-control:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+    }
+
+    .credentials-form-wrapper {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 12px;
+    }
+
+    .info-text {
+        color: #666;
+        margin-bottom: 20px;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background: #0056b3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
     }
 </style>
 
@@ -432,21 +572,20 @@ document.getElementById('credentialsForm').addEventListener('submit', function(e
     
     fetch('{% url "dashboard:update_application_credentials" application.id %}', {
         method: 'POST',
-        body: formData,
-        headers: {
-            // Remove the X-CSRFToken header since it's already in the form data
-            // The CSRF token will be sent via formData automatically
-        }
+        body: formData
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
             alert('Credentials updated successfully');
+            // If status changed to under_review, update the status display
+            if (data.new_status === 'under_review') {
+                const statusElement = document.querySelector('.status');
+                if (statusElement) {
+                    statusElement.textContent = 'Under Review';
+                    statusElement.className = 'status status-under_review';
+                }
+            }
             window.location.reload();
         } else {
             alert('Error updating credentials: ' + data.message);
@@ -454,8 +593,12 @@ document.getElementById('credentialsForm').addEventListener('submit', function(e
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error updating credentials. Please try again.');
+        alert('Error updating credentials');
     });
 });
 </script>
+
+<!-- Add SweetAlert2 JS just before closing body tag -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+
 {% endblock %}

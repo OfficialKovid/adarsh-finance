@@ -40,6 +40,10 @@ def upload_documents(request, application_id):
                         file=file
                     )
             
+            # Update application status to document_collected
+            application.status = 'document_collected'
+            application.save()
+            
             messages.success(request, "Documents uploaded successfully!")
             return render(request, 'customer/documents_submitted.html', {
                 'application': application,

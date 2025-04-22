@@ -1,22 +1,24 @@
-from .models import LoanApplication
-from django.db.models import Q
+from apps.loan.models import LoanApplication
 
 def loan_status(request):
-    """Global context processor for loan application status"""
-    if request.user.is_authenticated:
-        # Check for applications where user is the applicant
-        active_application = LoanApplication.objects.filter(
-            Q(user=request.user) | Q(phone_number=request.user.phone_number),
-            status__in=['new_lead', 'assigned', 'detail_collection', 'form_filled', 'under_review']
-        ).select_related('scheme').first()
-
-        return {
-            'has_application': bool(active_application),
-            'active_scheme': active_application.scheme if active_application else None,
-            'active_application': active_application
-        }
-    return {
+    context = {
         'has_application': False,
-        'active_scheme': None,
-        'active_application': None
+        'active_scheme': None
     }
+    
+    if request.user.is_authenticated:
+        # Get the most recent active application with updated status list
+        active_application = LoanApplication.objects.filter(
+            user=request.user,
+            status__in=['new_lead', 'assigned', 'details_collected', 'document_collected', 
+                       'form_filled', 'under_review']
+        ).select_related('scheme').order_by('-applied_at').first()
+        
+        if active_application:
+            context.update({
+                'has_application': True,
+                'active_scheme': active_application.scheme,
+                'active_application': active_application
+            })
+    
+    return context

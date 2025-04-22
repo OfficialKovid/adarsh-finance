@@ -11,6 +11,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 import logging
 from django.contrib.auth.hashers import make_password
 from apps.loan.utils import encrypt_password, decrypt_password
+from django.views.decorators.http import require_POST
 
 logger = logging.getLogger(__name__)
 
@@ -263,19 +264,67 @@ def update_application_credentials(request, application_id):
             assigned_agent=request.user
         )
         
+        # Update credentials
         application.loan_application_number = request.POST.get('loan_application_number')
         application.loan_username = request.POST.get('loan_username')
         
         # Encrypt password before saving
         password = request.POST.get('loan_password')
         if password:
-            application.loan_password = encrypt_password(password)
+            application.set_password(password)
         
+        # Save report if uploaded
         if 'report' in request.FILES:
             application.report = request.FILES['report']
         
+        # Update status to under_review if all required fields are filled
+        if all([
+            application.loan_application_number,
+            application.loan_username,
+            application.loan_password,
+            application.report
+        ]):
+            application.status = 'under_review'
+        
         application.save()
         
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Credentials updated successfully',
+            'new_status': application.status
+        })
     
     return JsonResponse({'status': 'error', 'message': 'Invalid method'})
+
+@login_required
+@require_POST
+def update_application_status(request, application_id):
+    try:
+        application = LoanApplication.objects.get(id=application_id)
+        new_status = request.POST.get('status')
+        
+        if not new_status:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Status is required'
+            })
+            
+        # Update status while keeping assigned agent
+        application.status = new_status
+        application.save()
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Application status updated successfully',
+            'new_status': application.get_status_display()
+        })
+    except LoanApplication.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Application not found'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        })

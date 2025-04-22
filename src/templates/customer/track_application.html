@@ -1,0 +1,311 @@
+{% extends 'base/base-website.html' %}
+{% load static %}
+
+{% block title %}Track Application - AdarshFinance{% endblock %}
+
+{% block content %}
+<section class="track-section">
+    <div class="track-container">
+        <div class="track-header" data-aos="fade-down">
+            <h1>Track Your Application</h1>
+            <p>Reference Number: {{ application.reference_number }}</p>
+        </div>
+
+        <div class="track-content">
+            <div class="status-card" data-aos="fade-up">
+                <h2>Application Details</h2>
+                <div class="application-details">
+                    <div class="detail-item">
+                        <label>Scheme</label>
+                        <p>{{ application.scheme.title }}</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Applied On</label>
+                        <p>{{ application.applied_at|date:"d M Y" }}</p>
+                    </div>
+                    {% if application.assigned_agent %}
+                    <div class="detail-item">
+                        <label>Assigned Agent</label>
+                        <p>{{ application.assigned_agent.get_full_name }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="progress-tracker" data-aos="fade-up" data-aos-delay="100">
+                <h2>Application Progress</h2>
+                <div class="timeline">
+                    <!-- Application Submitted - Always completed -->
+                    <div class="timeline-item completed active">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3>Application Submitted</h3>
+                            <p>Your application has been received</p>
+                        </div>
+                    </div>
+
+                    <!-- Form Filled -->
+                    <div class="timeline-item {% if application.status in 'details_collected,document_collected,under_review,closed' %}completed{% endif %} {% if application.status == 'new_lead' or application.status == 'assigned' %}active{% endif %}">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3>Form Filled</h3>
+                            <p>Application form completion</p>
+                            {% if application.status == 'new_lead' or application.status == 'assigned' %}
+                                <div class="action-link">
+                                    <a href="{% url 'customer:fill_form' application.scheme.slug %}" class="btn btn-primary">
+                                        <i class="fas fa-file-alt"></i> Fill Form Now
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Documents Submitted -->
+                    <div class="timeline-item {% if application.status in 'document_collected,under_review,closed' %}completed{% endif %} {% if application.status == 'details_collected' %}active{% endif %}">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3>Documents Submitted</h3>
+                            <p>Required documents collection</p>
+                            {% if application.status == 'details_collected' %}
+                                <div class="action-link">
+                                    <a href="{% url 'documents:upload' application.id %}" class="btn btn-primary">
+                                        <i class="fas fa-upload"></i> Upload Documents
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Under Review -->
+                    <div class="timeline-item {% if application.status in 'under_review,closed' %}completed{% endif %} {% if application.status == 'under_review' %}active{% endif %}">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3>Under Review</h3>
+                            <p>Your application is being reviewed</p>
+                        </div>
+                    </div>
+
+                    <!-- Process Complete -->
+                    <div class="timeline-item {% if application.status == 'closed' %}completed active{% endif %}">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3>Process Complete</h3>
+                            <p>Application process has been completed</p>
+                            {% if application.status == 'closed' %}
+                                <div class="success-message">
+                                    <i class="fas fa-check-circle"></i>
+                                    <p>Congratulations! Your loan application has been successfully processed.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if application.status == 'form_filled' %}
+            <div class="action-card" data-aos="fade-up" data-aos-delay="200">
+                <h2>Next Steps</h2>
+                <p>Your documents have been submitted successfully. Our team will review them and update you shortly.</p>
+                <a href="{% url 'documents:view' application.id %}" class="btn btn-primary">
+                    <i class="fas fa-file-alt"></i> View Submitted Documents
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<style>
+    .track-section {
+        min-height: 100vh;
+        background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(245,247,250,0.95));
+        padding: 120px 0 50px;
+    }
+
+    .track-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .track-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    .track-header h1 {
+        color: #1e3c72;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+
+    .status-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-weight: 500;
+        margin: 15px 0;
+    }
+
+    .application-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .detail-item label {
+        display: block;
+        color: #666;
+        margin-bottom: 5px;
+    }
+
+    .detail-item p {
+        color: #333;
+        font-size: 1.1rem;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .timeline {
+        position: relative;
+        margin: 30px 0;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 20px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 60px;
+        margin-bottom: 30px;
+        opacity: 0.5;
+    }
+
+    .timeline-item.completed {
+        opacity: 1;
+    }
+
+    .timeline-dot {
+        position: absolute;
+        left: 16px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #ccc;
+    }
+
+    .timeline-item.completed .timeline-dot {
+        background: #28a745;
+    }
+
+    .timeline-item.active .timeline-dot {
+        box-shadow: 0 0 0 4px rgba(40,167,69,0.2);
+    }
+
+    .timeline-content h3 {
+        margin: 0;
+        color: #333;
+        font-size: 1.2rem;
+    }
+
+    .timeline-content p {
+        margin: 5px 0 0;
+        color: #666;
+    }
+
+    .action-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        text-decoration: none;
+        margin-top: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: #1e3c72;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #152b50;
+        transform: translateY(-2px);
+    }
+
+    /* Status colors */
+    .status-new_lead { background: #cce5ff; color: #004085; }
+    .status-assigned { background: #d4edda; color: #155724; }
+    .status-detail_collection { background: #fff3cd; color: #856404; }
+    .status-form_filled { background: #d1ecf1; color: #0c5460; }
+    .status-under_review { background: #e2e3e5; color: #383d41; }
+    .status-closed { background: #28a745; color: white; }
+
+    @media (max-width: 768px) {
+        .track-header h1 {
+            font-size: 2rem;
+        }
+
+        .application-details {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .action-link {
+        margin-top: 15px;
+    }
+
+    .success-message {
+        margin-top: 15px;
+        padding: 15px;
+        background: #d4edda;
+        border-radius: 8px;
+        color: #155724;
+        text-align: center;
+    }
+
+    .success-message i {
+        font-size: 24px;
+        margin-bottom: 10px;
+        color: #28a745;
+    }
+
+    .timeline-content .btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: transform 0.3s ease;
+    }
+
+    .timeline-content .btn:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

@@ -8,7 +8,8 @@ from .views import (
     add_agent,
     assigned_applications,
     see_application_details,
-    update_application_credentials
+    update_application_credentials,
+    update_application_status
 )
 
 app_name = 'dashboard'
@@ -25,4 +26,7 @@ urlpatterns = [
     path('applications/<int:application_id>/update-credentials/', 
          update_application_credentials, 
          name='update_application_credentials'),
+    path('application/<int:application_id>/update-status/', 
+         update_application_status, 
+         name='update_application_status'),
 ]

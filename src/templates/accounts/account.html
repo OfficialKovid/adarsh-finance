@@ -117,11 +117,16 @@
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: #1e3c72;
+        background: #ccc;  /* Changed from #1e3c72 */
     }
 
-    .timeline-dot.active {
-        box-shadow: 0 0 0 4px rgba(30,60,114,0.2);
+    .timeline-item.completed .timeline-dot {
+        background: #28a745;  /* Changed to success color */
+    }
+
+    .timeline-item.active .timeline-dot {
+        background: #007bff;  /* Changed to active color */
+        box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.2);  /* Changed shadow color */
     }
 
     .action-buttons {
@@ -221,6 +226,74 @@
             padding: 0 10px;
         }
     }
+
+    .application-overview {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 25px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .overview-item label {
+        display: block;
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+    }
+
+    .overview-item p {
+        color: #1e3c72;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .timeline-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .status-badge.success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-badge.waiting {
+        background: #e2e3e5;
+        color: #383d41;
+    }
+
+    .timeline-date {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .no-application {
+        text-align: center;
+        padding: 30px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .no-application p {
+        margin-bottom: 20px;
+        color: #666;
+    }
 </style>
 {% endblock %}
 
@@ -256,38 +329,82 @@
             </div>
 
             <div class="timeline-card" data-aos="fade-up" data-aos-delay="200">
-                <h2>Application Progress</h2>
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-dot active"></div>
-                        <h3>Application Submitted</h3>
-                        <p>Your application has been received and is being processed</p>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-dot {% if status == 'verified' %}active{% endif %}"></div>
-                        <h3>Document Verification</h3>
-                        <p>Our team is reviewing your submitted documents</p>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-dot {% if status == 'approved' %}active{% endif %}"></div>
-                        <h3>Final Approval</h3>
-                        <p>Final review and decision making</p>
-                    </div>
-                </div>
+                <h2>Application Status</h2>
+                {% if application %}
 
-                <div class="action-buttons">
-                    {% if application %}
-                        <a href="{% url 'documents:upload' application.id %}" class="btn btn-primary">
-                            <i class="fas fa-file-upload"></i> Upload Documents
+
+                    <div class="timeline">
+                        <!-- Application Submitted -->
+                        <div class="timeline-item completed">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <h3>Application Submitted</h3>
+                                <span class="timeline-date">{{ application.applied_at|date:"d M Y" }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Form Status -->
+                        <div class="timeline-item {% if application.status in 'details_collected,document_collected,under_review,closed' %}completed{% endif %} {% if application.status in 'new_lead,assigned' %}active{% endif %}">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <h3>Form Details</h3>
+                                {% if application.status in 'new_lead,assigned' %}
+                                    <span class="status-badge pending">Pending</span>
+                                {% else %}
+                                    <span class="status-badge success">Completed</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Documents Status -->
+                        <div class="timeline-item {% if application.status in 'document_collected,under_review,closed' %}completed{% endif %} {% if application.status == 'details_collected' %}active{% endif %}">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <h3>Documents</h3>
+                                {% if application.status == 'details_collected' %}
+                                    <span class="status-badge pending">Upload Required</span>
+                                {% elif application.status in 'document_collected,under_review,closed' %}
+                                    <span class="status-badge success">Verified</span>
+                                {% else %}
+                                    <span class="status-badge waiting">Waiting</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Final Status -->
+                        <div class="timeline-item {% if application.status == 'closed' %}completed{% endif %} {% if application.status == 'under_review' %}active{% endif %}">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <h3>Final Status</h3>
+                                {% if application.status == 'closed' %}
+                                    <span class="status-badge success">Completed</span>
+                                {% elif application.status == 'under_review' %}
+                                    <span class="status-badge pending">Under Review</span>
+                                {% else %}
+                                    <span class="status-badge waiting">Pending</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a href="{% url 'customer:track_application' %}" class="btn btn-primary">
+                            <i class="fas fa-search"></i> View Full Details
                         </a>
-                    {% endif %}
-                    <a href="#" class="btn btn-primary">
-                        <i class="fas fa-search"></i> Track Application
-                    </a>
-                    <a href="#" class="btn btn-outline">
-                        <i class="fas fa-headset"></i> Contact Support
-                    </a>
-                </div>
+                        {% if application.status == 'details_collected' %}
+                            <a href="{% url 'documents:upload' application.id %}" class="btn btn-outline">
+                                <i class="fas fa-file-upload"></i> Upload Documents
+                            </a>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="no-application">
+                        <p>You haven't applied for any loans yet.</p>
+                        <a href="{% url 'list_loans' %}" class="btn btn-primary">
+                            <i class="fas fa-hand-holding-usd"></i> Apply Now
+                        </a>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

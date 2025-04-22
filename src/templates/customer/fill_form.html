@@ -1,14 +1,19 @@
 {% extends 'base/base-website.html' %}
 {% load static %}
 {% load custom_filters %}
+{% load customer_filters %}  <!-- Add this line -->
 
 {% block title %}Fill Application Form - {{ scheme.title }}{% endblock %}
 
 {% block head %}
 <style>
+    .content-container{
+        height: 85vh;
+    }
     .form-section {
         max-width: 800px;
         margin: 2rem auto;
+        margin-top: 5rem;
         padding: 2rem;
         background: white;
         border-radius: 10px;
@@ -90,6 +95,7 @@
 {% endblock %}
 
 {% block content %}
+<section class="content-container">
 <div class="form-section">
     <div class="form-header">
         <h1>{{ scheme.title }}</h1>
@@ -159,33 +165,35 @@
         <button type="submit" class="submit-btn">Submit Application</button>
     </form>
 </div>
+</section>
 {% endblock %}
 
 {% block js %}
 <script>
     document.getElementById('applicationForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
         const formData = new FormData(this);
         
-        fetch('{% url "customer:submit_form" scheme.slug %}', {  // Updated this line
+        fetch('{% url "customer:submit_form" scheme.slug %}', {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
             }
         })
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                window.location.href = data.redirect_url;
+                alert('Form submitted successfully!');
+                // Refresh the page after success alert
+                window.location.reload();
             } else {
-                alert(data.message || 'An error occurred. Please try again.');
+                alert(data.message || 'Error submitting form');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred. Please try again.');
+            alert('Error submitting form');
         });
     });
 

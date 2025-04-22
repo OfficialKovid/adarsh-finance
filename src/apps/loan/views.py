@@ -262,11 +262,6 @@ def update_application_status(request, application_id):
         application.status = new_status
         application.save()
         
-        # If status is changed to not_converted or closed, remove agent assignment
-        if new_status in ['not_converted', 'closed']:
-            application.assigned_agent = None
-            application.save()
-        
         return JsonResponse({
             'status': 'success',
             'new_status': application.status

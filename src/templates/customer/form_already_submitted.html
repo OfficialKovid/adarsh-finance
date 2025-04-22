@@ -1,16 +1,47 @@
 {% extends 'base/base-website.html' %}
+{% load static %}
+{% load customer_filters %}
+
+{% block title %}Form Submitted - {{ scheme.title }}{% endblock %}
 
 {% block content %}
 <div class="container my-5">
-    <div class="card">
-        <div class="card-body text-center">
-            <i class="fas fa-check-circle text-success" style="font-size: 48px;"></i>
-            <h2 class="mt-3">Form Already Submitted</h2>
-            <p class="lead">You have already submitted your application for {{ scheme.title }}</p>
-            <p>Reference Number: {{ submission.application.reference_number }}</p>
-            <p>Submitted on: {{ submission.submitted_at|date:"F d, Y" }}</p>
-            <p>Current Status: {{ submission.application.get_status_display }}</p>
-            <a href="{% url 'account' %}" class="btn btn-primary mt-3">
+    <div class="submission-card">
+        <div class="header">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>Form Already Submitted</h2>
+            <p>Your form for {{ scheme.title }} has been submitted successfully.</p>
+        </div>
+
+        <div class="submission-details">
+            <h3>Submitted Information</h3>
+            {% for field in form_fields %} 
+                <div class="field-item">
+                    <label>{{ field.field_name }}</label>
+                    {% if field.field_type == 'file' %}
+                        {% if files|get_item:field.field_name %}
+                            <div class="file-display">
+                                <a href="{{ files|get_item:field.field_name }}" target="_blank" class="file-link">
+                                    <i class="fas fa-file-download"></i> View Uploaded File
+                                </a>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No file uploaded</p>
+                        {% endif %}
+                    {% else %}
+                        <p>{{ form_data|get_item:field.field_name|default:"Not provided" }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="actions">
+            <a href="{% url 'customer:track_application' %}" class="btn btn-primary">
+                <i class="fas fa-chart-line"></i> Track Application
+            </a>
+            <a href="{% url 'account' %}" class="btn btn-outline">
                 <i class="fas fa-user"></i> Go to My Account
             </a>
         </div>
@@ -18,15 +49,105 @@
 </div>
 
 <style>
-    .card {
+    .submission-card {
+        background: white;
         border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        height: auto;
+        padding: 40px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        max-width: 800px;
+        margin: 0 auto;
+        margin-top: 5rem;
     }
-    .card-body {
-        padding: 3rem;
+
+    .header {
+        text-align: center;
+        margin-bottom: 40px;
     }
-    .text-success {
+
+    .success-icon {
+        font-size: 48px;
         color: #28a745;
+        margin-bottom: 20px;
+    }
+
+    .submission-details {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 30px;
+        margin: 30px 0;
+    }
+
+    .field-item {
+        margin-bottom: 25px;
+    }
+
+    .field-item label {
+        display: block;
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+    }
+
+    .field-item p {
+        background: white;
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin: 0;
+        border: 1px solid #dee2e6;
+    }
+
+    .file-display {
+        background: white;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    .file-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .file-link:hover {
+        text-decoration: underline;
+    }
+
+    .actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: #007bff;
+        color: white;
+        border: none;
+    }
+
+    .btn-outline {
+        border: 2px solid #007bff;
+        color: #007bff;
+        background: transparent;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
     }
 </style>
 {% endblock %}

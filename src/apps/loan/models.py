@@ -98,11 +98,12 @@ class LoanApplication(models.Model):
             ('new_lead', 'New Lead'),
             ('not_converted', 'Not Converted'),
             ('assigned', 'Assigned'),
-            ('detail_collection', 'Detail Collection'),
+            ('details_collected', 'Details Collected'),  # New status
+            ('document_collected', 'Document Collected'),  # New status
             ('form_filled', 'Form Filled'),
             ('under_review', 'Under Review'),
             ('closed', 'Closed'),
-            ('dropped', 'Dropped')  # Added new status
+            ('dropped', 'Dropped')
         ],
         default='new_lead'
     )

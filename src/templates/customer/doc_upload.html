@@ -4,115 +4,354 @@
 {% block title %}Upload Documents - {{ scheme.title }}{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row">
-        <div class="col-12">
-            <h2 class="mb-4">Required Documents for {{ scheme.title }}</h2>
-            
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
+<div class="upload-container">
+    <div class="upload-content">
+        <div class="upload-header" data-aos="fade-down">
+            <h1>Required Documents</h1>
+            <p>Please upload the following documents for {{ scheme.title }}</p>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} fade-in">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
 
-            <div class="document-list">
-                <form method="POST" enctype="multipart/form-data" id="documentForm">
-                    {% csrf_token %}
-                    {% for doc in required_documents %}
-                    <div class="document-item">
-                        <div class="doc-info">
+        <div class="document-list" data-aos="fade-up">
+            <form method="POST" enctype="multipart/form-data" id="documentForm">
+                {% csrf_token %}
+                {% for doc in required_documents %}
+                <div class="document-card">
+                    <div class="doc-info">
+                        <div class="doc-header">
                             <h4>{{ doc.document_name }}</h4>
-                            <p class="text-muted">Accepted format: {{ doc.document_type.extension }}</p>
-                        </div>
-                        <div class="doc-upload">
-                            {% if doc.uploaded_file %}
-                                <div class="uploaded-file">
-                                    <span class="file-name">{{ doc.uploaded_file.name }}</span>
-                                    <button type="button" class="btn btn-sm btn-danger remove-file" 
-                                            data-doc-id="{{ doc.id }}">Remove</button>
-                                </div>
-                            {% else %}
-                                <div class="upload-input">
-                                    <input type="file" name="doc_{{ doc.id }}" 
-                                           accept=".{{ doc.document_type.extension }}"
-                                           class="form-control" 
-                                           {% if doc.is_required %}required{% endif %}>
-                                </div>
+                            {% if doc.is_required %}
+                                <span class="required-badge">Required</span>
                             {% endif %}
                         </div>
-                        <div class="doc-status">
-                            {% if doc.uploaded_file %}
-                                <span class="badge bg-success">Uploaded</span>
-                            {% else %}
-                                <span class="badge bg-warning">Pending</span>
-                            {% endif %}
-                        </div>
+                        <p class="format-info">
+                            <i class="fas fa-info-circle"></i>
+                            Accepted format: {{ doc.document_type.extension }}
+                        </p>
                     </div>
-                    {% endfor %}
 
-                    <div class="mt-4">
-                        <button type="submit" class="btn btn-primary">Upload Documents</button>
+                    <div class="doc-upload-section">
+                        {% if doc.uploaded_file %}
+                            <div class="uploaded-file">
+                                <div class="file-info">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span class="file-name">{{ doc.uploaded_file.name }}</span>
+                                </div>
+                                <button type="button" class="btn-remove" 
+                                        data-doc-id="{{ doc.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        {% else %}
+                            <div class="upload-input">
+                                <label for="doc_{{ doc.id }}" class="upload-label">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span>Choose file</span>
+                                </label>
+                                <input type="file" 
+                                       id="doc_{{ doc.id }}"
+                                       name="doc_{{ doc.id }}" 
+                                       accept=".{{ doc.document_type.extension }}"
+                                       class="file-input" 
+                                       {% if doc.is_required %}required{% endif %}>
+                                <div class="selected-file"></div>
+                            </div>
+                        {% endif %}
+
+                        <div class="upload-status">
+                            {% if doc.uploaded_file %}
+                                <span class="status-badge success">
+                                    <i class="fas fa-check"></i> Uploaded
+                                </span>
+                            {% else %}
+                                <span class="status-badge pending">
+                                    <i class="fas fa-clock"></i> Pending
+                                </span>
+                            {% endif %}
+                        </div>
                     </div>
-                </form>
-            </div>
+                </div>
+                {% endfor %}
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-upload"></i> Upload Documents
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <style>
-    .document-list {
-        background: #fff;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-
-    .document-item {
+    .upload-container {
+        min-height: calc(100vh - 60px); /* Adjust based on your navbar height */
+        background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(245,247,250,0.95));
+        padding: 120px 0 50px;
         display: flex;
-        align-items: center;
-        padding: 15px;
-        border-bottom: 1px solid #eee;
-        gap: 20px;
+        flex-direction: column;
     }
 
-    .document-item:last-child {
-        border-bottom: none;
-    }
-
-    .doc-info {
+    .upload-content {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 20px;
+        width: 100%;
         flex: 1;
     }
 
-    .doc-info h4 {
-        margin: 0;
+    .upload-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .upload-header h1 {
+        color: #1e3c72;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+
+    .upload-header p {
+        color: #666;
         font-size: 1.1rem;
     }
 
-    .doc-upload {
-        width: 300px;
+    .document-card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .doc-status {
-        width: 100px;
-        text-align: center;
+    .document-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+
+    .doc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .doc-header h4 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.2rem;
+    }
+
+    .required-badge {
+        background: #ff6b6b;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
+
+    .format-info {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .doc-upload-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .upload-input {
+        flex: 1;
+    }
+
+    .upload-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .upload-label:hover {
+        border-color: #007bff;
+        color: #007bff;
+    }
+
+    .file-input {
+        display: none;
     }
 
     .uploaded-file {
         display: flex;
         align-items: center;
+        justify-content: space-between;
+        background: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 8px;
+        gap: 15px;
+    }
+
+    .file-info {
+        display: flex;
+        align-items: center;
         gap: 10px;
     }
 
-    .file-name {
+    .btn-remove {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .btn-remove:hover {
+        background: #c82333;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: 20px;
         font-size: 0.9rem;
-        color: #666;
+    }
+
+    .status-badge.success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .form-actions {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+    .btn-submit {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        background: #0056b3;
+        transform: translateY(-2px);
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .selected-file {
+        margin-top: 8px;
+        font-size: 0.9rem;
+        color: #0056b3;
+        display: none;  /* Hidden by default */
+    }
+
+    .selected-file.active {
+        display: block;
+        padding: 8px 12px;
+        background: #e7f5ff;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .upload-header h1 {
+            font-size: 2rem;
+        }
+
+        .doc-upload-section {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .status-badge {
+            align-self: flex-start;
+        }
     }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Add this new code at the beginning of your script
+    document.querySelectorAll('.file-input').forEach(input => {
+        input.addEventListener('change', function(e) {
+            const file = this.files[0];
+            const selectedFileDiv = this.parentElement.querySelector('.selected-file');
+            if (file) {
+                selectedFileDiv.innerHTML = `<i class="fas fa-file"></i> ${file.name}`;
+                selectedFileDiv.classList.add('active');
+                
+                // Also update the status badge
+                const statusBadge = this.closest('.document-card').querySelector('.status-badge');
+                statusBadge.className = 'status-badge pending';
+                statusBadge.innerHTML = '<i class="fas fa-clock"></i> Ready to upload';
+            } else {
+                selectedFileDiv.innerHTML = '';
+                selectedFileDiv.classList.remove('active');
+            }
+        });
+    });
+
     // Handle file uploads
     const form = document.getElementById('documentForm');
     form.addEventListener('submit', function(e) {
@@ -127,16 +366,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 'X-CSRFToken': formData.get('csrfmiddlewaretoken')
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                window.location.reload();
-            } else {
-                alert(data.message || 'Error uploading documents');
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
+            // Since we're redirecting on success, just reload the page
+            window.location.reload();
         })
         .catch(error => {
             console.error('Error:', error);
+            // Only show error alert if there's a real error
             alert('Error uploading documents');
         });
     });

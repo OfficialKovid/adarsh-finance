@@ -1,8 +1,10 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.conf import settings
+from django.contrib import messages  # Add this import
 from apps.loan.models import LoanScheme, LoanApplication
+from apps.documents.models import DocumentUpload
 from .models import FormSubmission
 import os
 import json
@@ -29,10 +31,14 @@ def fill_form(request, scheme_slug):
     ).first()
     
     if existing_submission:
-        return render(request, 'customer/form_already_submitted.html', {
+        context = {
             'submission': existing_submission,
-            'scheme': scheme
-        })
+            'scheme': scheme,
+            'form_fields': scheme.required_data_fields.all().order_by('display_order'),
+            'form_data': existing_submission.data,
+            'files': existing_submission.files
+        }
+        return render(request, 'customer/form_already_submitted.html', context)
     
     # Get form fields
     form_fields = scheme.required_data_fields.all().order_by('display_order')
@@ -58,7 +64,7 @@ def submit_form(request, scheme_slug):
         application = LoanApplication.objects.filter(
             user=request.user,
             scheme=scheme,
-            status__in=['new_lead', 'assigned', 'detail_collection']
+            status__in=['new_lead', 'assigned']
         ).first()
 
         if not application:
@@ -105,13 +111,13 @@ def submit_form(request, scheme_slug):
             }
         )
         
-        # Update application status
-        application.status = 'form_filled'
+        # Update application status to details_collected
+        application.status = 'details_collected'
         application.save()
         
         return JsonResponse({
             'status': 'success',
-            'redirect_url': '/applications/success/'
+            'message': 'Form submitted successfully'
         })
         
     except Exception as e:
@@ -119,3 +125,22 @@ def submit_form(request, scheme_slug):
             'status': 'error',
             'message': str(e)
         })
+
+@login_required
+def track_application(request):
+    # Get user's active application with updated status list
+    application = LoanApplication.objects.filter(
+        user=request.user,
+        status__in=['new_lead', 'assigned', 'details_collected', 'document_collected',
+                   'form_filled', 'under_review', 'closed', 'dropped']
+    ).select_related('scheme', 'assigned_agent').order_by('-applied_at').first()
+    
+    if not application:
+        messages.error(request, "No active application found.")
+        return redirect('list_loans')
+    
+    context = {
+        'application': application,
+        'uploaded_documents': DocumentUpload.objects.filter(application=application).select_related('required_document')
+    }
+    return render(request, 'customer/track_application.html', context)
