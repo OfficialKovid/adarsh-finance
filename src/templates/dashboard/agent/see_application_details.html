@@ -45,7 +45,9 @@
             <label>{{ field.field_name }}</label>
             {% if field.field_type == 'file' %}
                 {% if files|get_item:field.field_name %}
-                    <a href="{{ files|get_item:field.field_name }}" class="file-link" target="_blank">View File</a>
+                    <a href="{{ files|get_item:field.field_name }}" class="file-link" target="_blank">
+                        <i class="fas fa-file-download"></i> Download File
+                    </a>
                 {% else %}
                     <span class="no-file">No file uploaded</span>
                 {% endif %}
@@ -55,11 +57,136 @@
         </div>
         {% endfor %}
     </div>
-    {% else %}
-    <div class="no-data">
-        <p>No form data submitted yet.</p>
-    </div>
     {% endif %}
+
+    <div class="form-section">
+        <h3>Application Credentials</h3>
+        
+        {% if application.loan_application_number or application.loan_username or application.loan_password or application.report %}
+            <div class="credentials-display" id="credentialsDisplay">
+                <div class="credential-item">
+                    <label>Application Number</label>
+                    <p>{{ application.loan_application_number|default:"Not set" }}</p>
+                </div>
+                <div class="credential-item">
+                    <label>Username</label>
+                    <p>{{ application.loan_username|default:"Not set" }}</p>
+                </div>
+                <div class="credential-item">
+                    <label>Password</label>
+                    <p>{{ decrypted_password|default:"Not set" }}</p>
+                </div>
+                <div class="credential-item">
+                    <label>Report</label>
+                    {% if application.report %}
+                        <a href="{{ application.report.url }}" class="report-link" target="_blank">
+                            <i class="fas fa-file-pdf"></i> View Report
+                        </a>
+                    {% else %}
+                        <p>No report uploaded</p>
+                    {% endif %}
+                </div>
+                
+                <button type="button" class="btn btn-primary edit-btn" onclick="toggleEditMode()">
+                    <i class="fas fa-edit"></i> Edit Details
+                </button>
+            </div>
+            
+            <form method="POST" id="credentialsForm" enctype="multipart/form-data" style="display: none;">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Application Number</label>
+                    <input type="text" name="loan_application_number" 
+                           value="{{ application.loan_application_number|default:'' }}" 
+                           class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="loan_username" 
+                           value="{{ application.loan_username|default:'' }}" 
+                           class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="text" name="loan_password" 
+                           value="{{ decrypted_password|default:'' }}" 
+                           class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Report (PDF only)</label>
+                    {% if application.report %}
+                        <div class="current-report">
+                            <a href="{{ application.report.url }}" target="_blank" class="btn btn-sm btn-info">
+                                <i class="fas fa-file-pdf"></i> View Current Report
+                            </a>
+                        </div>
+                    {% endif %}
+                    <input type="file" name="report" class="form-control" accept=".pdf">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" onclick="toggleEditMode()">Cancel</button>
+                </div>
+            </form>
+        {% else %}
+            <form method="POST" id="credentialsForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Application Number</label>
+                    <input type="text" name="loan_application_number" 
+                           value="{{ application.loan_application_number|default:'' }}" 
+                           class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="loan_username" 
+                           value="{{ application.loan_username|default:'' }}" 
+                           class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="text" name="loan_password" 
+                           value="{{ decrypted_password|default:'' }}" 
+                           class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Report (PDF only)</label>
+                    {% if application.report %}
+                        <div class="current-report">
+                            <a href="{{ application.report.url }}" target="_blank" class="btn btn-sm btn-info">
+                                <i class="fas fa-file-pdf"></i> View Current Report
+                            </a>
+                        </div>
+                    {% endif %}
+                    <input type="file" name="report" class="form-control" accept=".pdf">
+                </div>
+                <button type="submit" class="btn btn-primary">Save Credentials</button>
+            </form>
+        {% endif %}
+    </div>
+
+    <div class="documents-section">
+        <h3>Uploaded Documents</h3>
+        {% if uploaded_documents %}
+            <div class="documents-grid">
+                {% for doc in uploaded_documents %}
+                <div class="document-item">
+                    <div class="doc-info">
+                        <i class="fas fa-file-alt"></i>
+                        <span class="doc-name">{{ doc.required_document.document_name }}</span>
+                    </div>
+                    <div class="doc-actions">
+                        <a href="{{ doc.file.url }}" class="doc-link" target="_blank">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                        <span class="upload-date">Uploaded: {{ doc.uploaded_at|date:"d M Y" }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-docs">No documents uploaded yet.</p>
+        {% endif %}
+    </div>
 </div>
 
 <style>
@@ -110,5 +237,225 @@
         border-radius: 15px;
         font-size: 0.9em;
     }
+
+    .documents-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .documents-grid {
+        display: grid;
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .document-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .doc-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .doc-info i {
+        color: #007bff;
+        font-size: 1.2em;
+    }
+
+    .doc-name {
+        font-weight: 500;
+    }
+
+    .doc-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .doc-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: #007bff;
+        text-decoration: none;
+        padding: 5px 10px;
+        border: 1px solid #007bff;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .doc-link:hover {
+        background: #007bff;
+        color: white;
+    }
+
+    .upload-date {
+        color: #666;
+        font-size: 0.9em;
+    }
+
+    .no-docs {
+        text-align: center;
+        color: #666;
+        padding: 20px;
+    }
+
+    .current-report {
+        margin-bottom: 10px;
+    }
+
+    .btn-info {
+        background: #17a2b8;
+        color: white;
+        text-decoration: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-info:hover {
+        background: #138496;
+        color: white;
+    }
+
+    .credentials-display {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .credential-item {
+        margin-bottom: 15px;
+    }
+
+    .credential-item label {
+        display: block;
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+    }
+
+    .credential-item p {
+        padding: 10px;
+        background: white;
+        border-radius: 4px;
+        margin: 0;
+        border: 1px solid #dee2e6;
+    }
+
+    .report-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .report-link:hover {
+        background: #0056b3;
+        color: white;
+    }
+
+    .edit-btn {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .edit-btn:hover {
+        background: #0056b3;
+        transform: translateY(-2px);
+    }
+
+    .form-actions {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+    }
 </style>
+
+<script>
+function toggleEditMode() {
+    const displayDiv = document.getElementById('credentialsDisplay');
+    const form = document.getElementById('credentialsForm');
+    
+    if (displayDiv.style.display !== 'none') {
+        displayDiv.style.display = 'none';
+        form.style.display = 'block';
+    } else {
+        displayDiv.style.display = 'block';
+        form.style.display = 'none';
+    }
+}
+
+document.getElementById('credentialsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    
+    fetch('{% url "dashboard:update_application_credentials" application.id %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            // Remove the X-CSRFToken header since it's already in the form data
+            // The CSRF token will be sent via formData automatically
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.status === 'success') {
+            alert('Credentials updated successfully');
+            window.location.reload();
+        } else {
+            alert('Error updating credentials: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating credentials. Please try again.');
+    });
+});
+</script>
 {% endblock %}

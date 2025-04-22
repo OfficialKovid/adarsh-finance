@@ -21,3 +21,12 @@ class RequiredDocument(models.Model):
 
     class Meta:
         ordering = ['document_name']
+
+class DocumentUpload(models.Model):
+    application = models.ForeignKey('loan.LoanApplication', on_delete=models.CASCADE)
+    required_document = models.ForeignKey(RequiredDocument, on_delete=models.CASCADE)
+    file = models.FileField(upload_to='documents/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.required_document.document_name} for {self.application.reference_number}"

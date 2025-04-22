@@ -5,6 +5,7 @@ from django.conf import settings
 from apps.documents.models import RequiredDocument  # Add this import
 import random
 import string
+from .utils import encrypt_password, decrypt_password
 
 class LoanScheme(models.Model):
     title = models.CharField(max_length=255)
@@ -121,16 +122,38 @@ class LoanApplication(models.Model):
         blank=True,
         related_name='user_applications'
     )
+    # Add these new fields
+    loan_application_number = models.CharField(max_length=100, blank=True, null=True)
+    loan_username = models.CharField(max_length=100, blank=True, null=True)
+    loan_password = models.CharField(max_length=255, blank=True, null=True)  # Will be encrypted
+    report = models.FileField(
+        upload_to='loan_reports/%Y/%m/%d/', 
+        null=True, 
+        blank=True,
+        help_text="Upload PDF report"
+    )
 
     class Meta:
         ordering = ['-applied_at']
 
+    def clean(self):
+        if self.report and not self.report.name.endswith('.pdf'):
+            raise ValidationError('Only PDF files are allowed for reports.')
+    
     def save(self, *args, **kwargs):
+        if self.report:
+            self.clean()
         if not self.reference_number:
             # Generate reference number using UUID
             unique_id = str(uuid.uuid4())[:8].upper()
             self.reference_number = f'LA-{unique_id}'
         super().save(*args, **kwargs)
+
+    def set_password(self, password):
+        self.loan_password = encrypt_password(password)
+
+    def get_password(self):
+        return decrypt_password(self.loan_password)
 
     @classmethod
     def get_active_application(cls, user):

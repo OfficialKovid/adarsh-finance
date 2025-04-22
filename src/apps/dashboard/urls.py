@@ -7,7 +7,8 @@ from .views import (
     toggle_agent_status,
     add_agent,
     assigned_applications,
-    see_application_details
+    see_application_details,
+    update_application_credentials
 )
 
 app_name = 'dashboard'
@@ -21,4 +22,7 @@ urlpatterns = [
     path('manager/agents/add/', add_agent, name='add-agent'),
     path('agent/applications/', assigned_applications, name='assigned-applications'),
     path('agent/applications/<int:application_id>/', see_application_details, name='see-application-details'),
+    path('applications/<int:application_id>/update-credentials/', 
+         update_application_credentials, 
+         name='update_application_credentials'),
 ]

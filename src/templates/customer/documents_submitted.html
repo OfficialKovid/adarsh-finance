@@ -1,0 +1,124 @@
+{% extends 'base/base-website.html' %}
+{% load static %}
+
+{% block title %}Documents Submitted{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="submission-card">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h2>Documents Successfully Submitted!</h2>
+        <p>Thank you for submitting your documents for {{ application.scheme.title }}</p>
+        <div class="details">
+            <p><strong>Reference Number:</strong> {{ application.reference_number }}</p>
+            <p><strong>Status:</strong> Under Review</p>
+        </div>
+        <div class="next-steps">
+            <h3>Next Steps</h3>
+            <ul>
+                <li>Our team will review your submitted documents</li>
+                <li>You will be notified of any updates</li>
+                <li>You can track your application status in your account</li>
+            </ul>
+        </div>
+        <div class="actions">
+            <a href="{% url 'account' %}" class="btn btn-primary">
+                <i class="fas fa-user"></i> Go to My Account
+            </a>
+            <a href="{% url 'home_page' %}" class="btn btn-outline">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .submission-card {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .success-icon {
+        font-size: 64px;
+        color: #28a745;
+        margin-bottom: 20px;
+        animation: scaleIn 0.5s ease;
+    }
+
+    .details {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+        text-align: left;
+    }
+
+    .next-steps {
+        text-align: left;
+        margin: 30px 0;
+    }
+
+    .next-steps ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .next-steps li {
+        padding: 10px 0;
+        padding-left: 30px;
+        position: relative;
+    }
+
+    .next-steps li:before {
+        content: "→";
+        position: absolute;
+        left: 0;
+        color: #007bff;
+    }
+
+    .actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: #007bff;
+        color: white;
+        border: none;
+    }
+
+    .btn-outline {
+        border: 2px solid #007bff;
+        color: #007bff;
+        background: transparent;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    @keyframes scaleIn {
+        0% { transform: scale(0.8); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+</style>
+{% endblock %}

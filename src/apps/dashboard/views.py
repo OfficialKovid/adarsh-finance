@@ -5,9 +5,12 @@ from apps.accounts.views import agent_required, manager_required
 from django.contrib.auth import get_user_model
 from apps.loan.models import LoanApplication
 from apps.customer.models import FormSubmission  # Updated this import
+from apps.documents.models import DocumentUpload  # Add this import
 from django.db.models import Count, Avg, Case, When, FloatField, Q
 from django.views.decorators.csrf import ensure_csrf_cookie
 import logging
+from django.contrib.auth.hashers import make_password
+from apps.loan.utils import encrypt_password, decrypt_password
 
 logger = logging.getLogger(__name__)
 
@@ -212,7 +215,7 @@ def assigned_applications(request):
 @login_required(login_url='/dashboard/staff-login/')
 @agent_required
 def see_application_details(request, application_id):
-    logger.debug(f'Accessing application details for ID: {application_id}')  # Debug log
+    logger.debug(f'Accessing application details for ID: {application_id}')
     
     try:
         # Get application and related form submission
@@ -221,24 +224,58 @@ def see_application_details(request, application_id):
             id=application_id,
             assigned_agent=request.user
         )
-        logger.debug(f'Found application: {application.reference_number}')  # Debug log
         
         # Get form submission data
         form_submission = FormSubmission.objects.filter(application=application).first()
-        logger.debug(f'Form submission found: {bool(form_submission)}')  # Debug log
         
-        # Get scheme's required fields
+        # Get required fields
         form_fields = application.scheme.required_data_fields.all().order_by('display_order')
+        
+        # Get uploaded documents
+        uploaded_documents = DocumentUpload.objects.filter(
+            application=application
+        ).select_related('required_document')
+        
+        # Decrypt password for display
+        decrypted_password = decrypt_password(application.loan_password) if application.loan_password else None
         
         context = {
             'application': application,
             'form_data': form_submission.data if form_submission else None,
             'files': form_submission.files if form_submission else None,
             'form_fields': form_fields,
+            'uploaded_documents': uploaded_documents,
+            'decrypted_password': decrypted_password
         }
         
         return render(request, 'dashboard/agent/see_application_details.html', context)
         
     except Exception as e:
-        logger.error(f'Error in see_application_details: {str(e)}')  # Error log
+        logger.error(f'Error in see_application_details: {str(e)}')
         raise
+
+@login_required
+@agent_required
+def update_application_credentials(request, application_id):
+    if request.method == 'POST':
+        application = get_object_or_404(LoanApplication, 
+            id=application_id, 
+            assigned_agent=request.user
+        )
+        
+        application.loan_application_number = request.POST.get('loan_application_number')
+        application.loan_username = request.POST.get('loan_username')
+        
+        # Encrypt password before saving
+        password = request.POST.get('loan_password')
+        if password:
+            application.loan_password = encrypt_password(password)
+        
+        if 'report' in request.FILES:
+            application.report = request.FILES['report']
+        
+        application.save()
+        
+        return JsonResponse({'status': 'success'})
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid method'})

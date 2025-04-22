@@ -1,0 +1,173 @@
+{% extends 'base/base-website.html' %}
+{% load static %}
+
+{% block title %}Upload Documents - {{ scheme.title }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Required Documents for {{ scheme.title }}</h2>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="document-list">
+                <form method="POST" enctype="multipart/form-data" id="documentForm">
+                    {% csrf_token %}
+                    {% for doc in required_documents %}
+                    <div class="document-item">
+                        <div class="doc-info">
+                            <h4>{{ doc.document_name }}</h4>
+                            <p class="text-muted">Accepted format: {{ doc.document_type.extension }}</p>
+                        </div>
+                        <div class="doc-upload">
+                            {% if doc.uploaded_file %}
+                                <div class="uploaded-file">
+                                    <span class="file-name">{{ doc.uploaded_file.name }}</span>
+                                    <button type="button" class="btn btn-sm btn-danger remove-file" 
+                                            data-doc-id="{{ doc.id }}">Remove</button>
+                                </div>
+                            {% else %}
+                                <div class="upload-input">
+                                    <input type="file" name="doc_{{ doc.id }}" 
+                                           accept=".{{ doc.document_type.extension }}"
+                                           class="form-control" 
+                                           {% if doc.is_required %}required{% endif %}>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="doc-status">
+                            {% if doc.uploaded_file %}
+                                <span class="badge bg-success">Uploaded</span>
+                            {% else %}
+                                <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">Upload Documents</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .document-list {
+        background: #fff;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .document-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        gap: 20px;
+    }
+
+    .document-item:last-child {
+        border-bottom: none;
+    }
+
+    .doc-info {
+        flex: 1;
+    }
+
+    .doc-info h4 {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    .doc-upload {
+        width: 300px;
+    }
+
+    .doc-status {
+        width: 100px;
+        text-align: center;
+    }
+
+    .uploaded-file {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .file-name {
+        font-size: 0.9rem;
+        color: #666;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle file uploads
+    const form = document.getElementById('documentForm');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('{% url "documents:upload" application.id %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Error uploading documents');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error uploading documents');
+        });
+    });
+
+    // Handle file removal
+    document.querySelectorAll('.remove-file').forEach(button => {
+        button.addEventListener('click', function() {
+            const docId = this.dataset.docId;
+            
+            if (confirm('Are you sure you want to remove this file?')) {
+                fetch(`/documents/remove/${docId}/`, {  // Change this line
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Error removing file');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error removing file');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

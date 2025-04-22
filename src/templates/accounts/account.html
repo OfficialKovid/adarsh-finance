@@ -276,6 +276,11 @@
                 </div>
 
                 <div class="action-buttons">
+                    {% if application %}
+                        <a href="{% url 'documents:upload' application.id %}" class="btn btn-primary">
+                            <i class="fas fa-file-upload"></i> Upload Documents
+                        </a>
+                    {% endif %}
                     <a href="#" class="btn btn-primary">
                         <i class="fas fa-search"></i> Track Application
                     </a>
