@@ -328,3 +328,24 @@ def update_application_status(request, application_id):
             'status': 'error',
             'message': str(e)
         })
+
+from django.contrib.auth.decorators import user_passes_test
+
+@login_required
+@user_passes_test(lambda u: u.role == 'MANAGER')
+def application_details_admin(request, application_id):
+    application = get_object_or_404(LoanApplication, id=application_id)
+    
+    # Get form submission if exists
+    form_submission = FormSubmission.objects.filter(application=application).first()
+    
+    context = {
+        'application': application,
+        'form_fields': application.scheme.required_data_fields.all().order_by('display_order'),
+        'form_data': form_submission.data if form_submission else None,
+        'files': form_submission.files if form_submission else None,
+        'uploaded_documents': DocumentUpload.objects.filter(application=application).select_related('required_document'),
+        'decrypted_password': decrypt_password(application.loan_password) if application.loan_password else None
+    }
+    
+    return render(request, 'dashboard/see_application_details_admin.html', context)

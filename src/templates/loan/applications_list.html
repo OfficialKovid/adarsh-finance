@@ -464,6 +464,23 @@
     .notification.show {
         transform: translateY(0);
     }
+
+    /* Add these new styles */
+    .data-table tbody tr {
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .data-table tbody tr:hover {
+        background-color: rgba(30, 60, 114, 0.05);
+    }
+
+    /* Make sure buttons and selects don't trigger row click */
+    .data-table button,
+    .data-table select,
+    .data-table a {
+        pointer-events: auto;
+    }
 </style>
 
 <!-- Add this div at the end of the content block, just before the script tags -->
@@ -850,6 +867,21 @@
             notification.classList.remove('show');
         }, 3000);
     }
+
+    // Update this new code for row clicking
+    document.querySelectorAll('.data-table tbody tr').forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Don't trigger if clicking on a button, select, or link
+            if (e.target.closest('button, select, a')) {
+                return;
+            }
+            
+            const applicationId = this.dataset.applicationId;
+            if (applicationId) {
+                window.location.href = `{% url 'dashboard:application_details_admin' 0 %}`.replace('0', applicationId);
+            }
+        });
+    });
 </script>
 {% endblock %}
 {% endblock %}

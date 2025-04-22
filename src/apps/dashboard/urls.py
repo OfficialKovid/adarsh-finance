@@ -9,7 +9,8 @@ from .views import (
     assigned_applications,
     see_application_details,
     update_application_credentials,
-    update_application_status
+    update_application_status,
+    application_details_admin
 )
 
 app_name = 'dashboard'
@@ -29,4 +30,7 @@ urlpatterns = [
     path('application/<int:application_id>/update-status/', 
          update_application_status, 
          name='update_application_status'),
+    path('applications/<int:application_id>/details/', 
+         application_details_admin, 
+         name='application_details_admin'),
 ]
