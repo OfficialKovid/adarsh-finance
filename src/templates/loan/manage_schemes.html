@@ -7,102 +7,7 @@
 <p>View and manage all loan schemes</p>
 {% endblock %}
 
-{% block content %}
-<div class="content-card">
-    <div class="schemes-header">
-        <div class="search-box">
-            <input type="text" id="schemeSearch" placeholder="Search schemes...">
-        </div>
-        <a href="{% url 'add_new_loan' %}" class="btn-add-scheme">
-            <i class="fas fa-plus"></i> Add New Scheme
-        </a>
-    </div>
-
-    <div class="schemes-grid">
-        {% for scheme in loans %}
-        <div class="scheme-card">
-            <div class="scheme-header">
-                <a href="{% url 'loan_details' scheme.slug %}" class="scheme-logo">
-                    {% if scheme.image %}
-                        <img src="{{ scheme.image.url }}" alt="{{ scheme.title }}">
-                    {% else %}
-                        <i class="fas fa-piggy-bank"></i>
-                    {% endif %}
-                </a>
-                <div class="scheme-title">
-                    <a href="{% url 'loan_details' scheme.slug %}" class="scheme-title-link">
-                        <h3>{{ scheme.title }}</h3>
-                        <p class="scheme-fullname">{{ scheme.full_name }}</p>
-                    </a>
-                </div>
-                <button class="btn-edit" data-scheme-id="{{ scheme.id }}">
-                    <i class="fas fa-edit"></i>
-                </button>
-            </div>
-            <div class="scheme-content">
-                <p class="scheme-description">{{ scheme.description|truncatechars:150 }}</p>
-                
-                <div class="scheme-details">
-                    <div class="detail-item">
-                        <i class="fas fa-calendar"></i>
-                        <span>{% if scheme.start_year %}{{ scheme.start_year }} - {{ scheme.end_year|default:"Present" }}{% else %}Ongoing{% endif %}</span>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-file-alt"></i>
-                        <span>{{ scheme.applications.count }} Applications</span>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-clock"></i>
-                        <span>Added {{ scheme.created_at|date:"M d, Y" }}</span>
-                    </div>
-                </div>
-
-                <div class="scheme-features">
-                    <div class="features-grid">
-                        {% for point in scheme.key_points.all|slice:":3" %}
-                            <div class="feature-item">
-                                <i class="fas fa-check-circle"></i>
-                                <span>{{ point.point }}</span>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <div class="scheme-sectors">
-                    {% for sector in scheme.covered_sectors.all %}
-                        <span class="sector-badge">{{ sector.sector_name }}</span>
-                    {% endfor %}
-                </div>
-
-                <div class="scheme-meta">
-                    <span class="status {% if scheme.is_active %}active{% else %}inactive{% endif %}">
-                        <i class="fas {% if scheme.is_active %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
-                        {{ scheme.is_active|yesno:"Active,Inactive" }}
-                    </span>
-                </div>
-
-                <div class="scheme-actions">
-                    <button class="btn-toggle-status" data-scheme-id="{{ scheme.id }}">
-                        {{ scheme.is_active|yesno:"Deactivate,Activate" }}
-                    </button>
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <div class="no-schemes">
-            <i class="fas fa-folder-open"></i>
-            <p>No loan schemes found</p>
-            <a href="{% url 'add_new_loan' %}" class="btn-add-scheme">Add New Scheme</a>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-
-<div class="notification" id="notification">
-    <span class="notification-message"></span>
-    <button class="notification-close">&times;</button>
-</div>
-
+{% block extra_css %}
 <style>
     .schemes-header {
         display: flex;
@@ -433,6 +338,105 @@
         }
     }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="schemes-header">
+        <div class="search-box">
+            <input type="text" id="schemeSearch" placeholder="Search schemes...">
+        </div>
+        <a href="{% url 'add_new_loan' %}" class="btn-add-scheme">
+            <i class="fas fa-plus"></i> Add New Scheme
+        </a>
+    </div>
+
+    <div class="schemes-grid">
+        {% for scheme in loans %}
+        <div class="scheme-card">
+            <div class="scheme-header">
+                <a href="{% url 'loan_details' scheme.slug %}" class="scheme-logo">
+                    {% if scheme.image %}
+                        <img src="{{ scheme.image.url }}" alt="{{ scheme.title }}">
+                    {% else %}
+                        <i class="fas fa-piggy-bank"></i>
+                    {% endif %}
+                </a>
+                <div class="scheme-title">
+                    <a href="{% url 'loan_details' scheme.slug %}" class="scheme-title-link">
+                        <h3>{{ scheme.title }}</h3>
+                        <p class="scheme-fullname">{{ scheme.full_name }}</p>
+                    </a>
+                </div>
+                <button class="btn-edit" data-scheme-id="{{ scheme.id }}">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
+            <div class="scheme-content">
+                <p class="scheme-description">{{ scheme.description|truncatechars:150 }}</p>
+                
+                <div class="scheme-details">
+                    <div class="detail-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>{% if scheme.start_year %}{{ scheme.start_year }} - {{ scheme.end_year|default:"Present" }}{% else %}Ongoing{% endif %}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-file-alt"></i>
+                        <span>{{ scheme.applications.count }} Applications</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Added {{ scheme.created_at|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+
+                <div class="scheme-features">
+                    <div class="features-grid">
+                        {% for point in scheme.key_points.all|slice:":3" %}
+                            <div class="feature-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>{{ point.point }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="scheme-sectors">
+                    {% for sector in scheme.covered_sectors.all %}
+                        <span class="sector-badge">{{ sector.sector_name }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="scheme-meta">
+                    <span class="status {% if scheme.is_active %}active{% else %}inactive{% endif %}">
+                        <i class="fas {% if scheme.is_active %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                        {{ scheme.is_active|yesno:"Active,Inactive" }}
+                    </span>
+                </div>
+
+                <div class="scheme-actions">
+                    <button class="btn-toggle-status" data-scheme-id="{{ scheme.id }}">
+                        {{ scheme.is_active|yesno:"Deactivate,Activate" }}
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-schemes">
+            <i class="fas fa-folder-open"></i>
+            <p>No loan schemes found</p>
+            <a href="{% url 'add_new_loan' %}" class="btn-add-scheme">Add New Scheme</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="notification" id="notification">
+    <span class="notification-message"></span>
+    <button class="notification-close">&times;</button>
+</div>
+
+
 
 {% block extra_js %}
 <script>
