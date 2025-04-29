@@ -4,9 +4,9 @@ from django.contrib.auth.decorators import login_required
 from apps.accounts.views import agent_required, manager_required
 from django.contrib.auth import get_user_model
 from apps.loan.models import LoanApplication
-from apps.customer.models import FormSubmission  # Updated this import
-from apps.documents.models import DocumentUpload  # Add this import
-from django.db.models import Count, Avg, Case, When, FloatField, Q
+from apps.customer.models import FormSubmission
+from apps.documents.models import DocumentUpload
+from django.db.models import Count, Avg, Case, When, FloatField, Q, F, ExpressionWrapper
 from django.views.decorators.csrf import ensure_csrf_cookie
 import logging
 from django.contrib.auth.hashers import make_password
@@ -26,20 +26,79 @@ def dashboard(request):
 @login_required(login_url='/dashboard/staff-login/')
 @agent_required
 def agent_dashboard(request):
+    # Get agent's applications
+    agent_applications = LoanApplication.objects.filter(assigned_agent=request.user)
+    
+    # Calculate statistics
+    total_applications = agent_applications.count()
+    pending_review = agent_applications.filter(status='under_review').count()
+    approved = agent_applications.filter(status='closed').count()
+    
+    # Calculate success rate
+    success_rate = round((approved / total_applications * 100) if total_applications > 0 else 0)
+    
+    # Get recent applications
+    recent_applications = agent_applications.select_related('scheme').order_by('-applied_at')[:5]
+    
+    # Get recent documents
+    recent_documents = DocumentUpload.objects.filter(
+        application__assigned_agent=request.user
+    ).select_related(
+        'application', 
+        'required_document'
+    ).order_by('-uploaded_at')[:5]
+    
     context = {
         'title': 'Agent Dashboard',
         'role': 'Agent',
         'name': request.user.get_full_name() or request.user.email,
+        'total_applications': total_applications,
+        'pending_review': pending_review,
+        'approved': approved,
+        'success_rate': success_rate,
+        'recent_applications': recent_applications,
+        'recent_documents': recent_documents,
     }
     return render(request, "dashboard/agent/agent_dashboard.html", context)
 
 @login_required(login_url='/dashboard/staff-login/')
 @manager_required
 def manager_dashboard(request):
+    # Get total applications count
+    total_applications = LoanApplication.objects.count()
+
+    # Get active agents count
+    User = get_user_model()
+    active_agents = User.objects.filter(role='AGENT', is_active=True).count()
+
+    # Get pending approvals (applications under review)
+    pending_approvals = LoanApplication.objects.filter(status='under_review').count()
+
+    # Get recent activity
+    recent_activities = LoanApplication.objects.select_related('assigned_agent').order_by('-applied_at')[:5]
+
+    # Get top performing agents
+    top_agents = User.objects.filter(role='AGENT').annotate(
+        applications_count=Count('assigned_applications'),
+        approved_count=Count('assigned_applications', 
+            filter=Q(assigned_applications__status='closed')
+        )
+    ).filter(applications_count__gt=0).annotate(
+        approval_rate=ExpressionWrapper(
+            F('approved_count') * 100.0 / F('applications_count'),
+            output_field=FloatField()
+        )
+    ).order_by('-approval_rate')[:3]
+
     context = {
         'title': 'Manager Dashboard',
         'role': 'Manager',
         'name': request.user.get_full_name() or request.user.email,
+        'total_applications': total_applications,
+        'active_agents': active_agents,
+        'pending_approvals': pending_approvals,
+        'recent_activities': recent_activities,
+        'top_agents': top_agents,
     }
     return render(request, "dashboard/manager_dashboard.html", context)
 

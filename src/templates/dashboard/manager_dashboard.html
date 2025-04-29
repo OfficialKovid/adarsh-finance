@@ -10,19 +10,15 @@
 <div class="stats-grid">
     <div class="stat-card">
         <h3>Total Applications</h3>
-        <div class="stat-value">2,543</div>
+        <div class="stat-value">{{ total_applications }}</div>
     </div>
     <div class="stat-card">
         <h3>Active Agents</h3>
-        <div class="stat-value">12</div>
+        <div class="stat-value">{{ active_agents }}</div>
     </div>
     <div class="stat-card">
         <h3>Pending Approvals</h3>
-        <div class="stat-value">28</div>
-    </div>
-    <div class="stat-card">
-        <h3>Total Disbursed</h3>
-        <div class="stat-value">₹4.2M</div>
+        <div class="stat-value">{{ pending_approvals }}</div>
     </div>
 </div>
 
@@ -32,33 +28,29 @@
     <div class="content-card">
         <h2>Recent Activity</h2>
         <ul class="activity-list">
+            {% for activity in recent_activities %}
             <li class="activity-item">
-                <div class="activity-icon success">
-                    <i class="fas fa-check"></i>
+                <div class="activity-icon {% if activity.status == 'closed' %}success
+                                        {% elif activity.status == 'under_review' %}warning
+                                        {% elif activity.status == 'dropped' %}danger
+                                        {% else %}info{% endif %}">
+                    <i class="fas {% if activity.status == 'closed' %}fa-check
+                              {% elif activity.status == 'under_review' %}fa-clock
+                              {% elif activity.status == 'dropped' %}fa-times
+                              {% else %}fa-info-circle{% endif %}"></i>
                 </div>
                 <div class="activity-details">
-                    <h4>Loan Application Approved</h4>
-                    <p>Agent: John Doe • 2 hours ago</p>
+                    <h4>{{ activity.get_status_display }} - {{ activity.name }}</h4>
+                    <p>{% if activity.assigned_agent %}Agent: {{ activity.assigned_agent.get_full_name }}{% endif %} • {{ activity.applied_at|timesince }} ago</p>
                 </div>
             </li>
+            {% empty %}
             <li class="activity-item">
-                <div class="activity-icon warning">
-                    <i class="fas fa-clock"></i>
-                </div>
                 <div class="activity-details">
-                    <h4>New Application Pending Review</h4>
-                    <p>Agent: Sarah Smith • 3 hours ago</p>
+                    <h4>No recent activity</h4>
                 </div>
             </li>
-            <li class="activity-item">
-                <div class="activity-icon danger">
-                    <i class="fas fa-times"></i>
-                </div>
-                <div class="activity-details">
-                    <h4>Application Rejected</h4>
-                    <p>Agent: Mike Johnson • 5 hours ago</p>
-                </div>
-            </li>
+            {% endfor %}
         </ul>
     </div>
 
@@ -66,24 +58,20 @@
     <div class="content-card">
         <h2>Top Performing Agents</h2>
         <ul class="activity-list">
+            {% for agent in top_agents %}
             <li class="activity-item">
                 <div class="activity-details">
-                    <h4>John Doe</h4>
-                    <p>15 Applications • 90% Approval Rate</p>
+                    <h4>{{ agent.get_full_name }}</h4>
+                    <p>{{ agent.applications_count }} Applications • {{ agent.approval_rate|floatformat:0 }}% Approval Rate</p>
                 </div>
             </li>
+            {% empty %}
             <li class="activity-item">
                 <div class="activity-details">
-                    <h4>Sarah Smith</h4>
-                    <p>12 Applications • 85% Approval Rate</p>
+                    <h4>No agent data available</h4>
                 </div>
             </li>
-            <li class="activity-item">
-                <div class="activity-details">
-                    <h4>Mike Johnson</h4>
-                    <p>10 Applications • 80% Approval Rate</p>
-                </div>
-            </li>
+            {% endfor %}
         </ul>
     </div>
 </div>

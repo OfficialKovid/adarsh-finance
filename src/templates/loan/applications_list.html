@@ -297,8 +297,164 @@
     .data-table a {
         pointer-events: auto;
     }
+
+    /* Add these new responsive styles */
+    @media (max-width: 1200px) {
+        .section-filters {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .filter-group {
+            width: 100%;
+        }
+
+        .form-select {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .content-card {
+            margin: 10px;
+            padding: 15px;
+        }
+
+        .data-table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 10px;
+        }
+
+        .section-tabs {
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 15px;
+            gap: 5px;
+        }
+
+        .tab-btn {
+            padding: 6px 12px;
+            font-size: 0.9em;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .section-filters {
+            grid-template-columns: 1fr;
+        }
+
+        .search-form {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .search-btn,
+        .clear-search {
+            width: 100%;
+            text-align: center;
+        }
+
+        .section-content {
+            overflow-x: hidden;
+        }
+
+        .status-badge {
+            font-size: 0.8em;
+            padding: 4px 8px;
+        }
+
+        .action-btn,
+        .agent-assign-select {
+            min-width: 100px;
+            font-size: 0.8em;
+            padding: 6px;
+        }
+
+        .notification {
+            width: 90%;
+            left: 5%;
+            right: 5%;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .tab-btn {
+            padding: 4px 8px;
+            font-size: 0.8em;
+        }
+
+        .count {
+            font-size: 0.7em;
+            padding: 2px 4px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 8px;
+            font-size: 0.9em;
+        }
+
+        .search-input-wrapper {
+            width: 100%;
+        }
+
+        .search-suggestions {
+            width: 100%;
+        }
+    }
+
+    /* Add touch-friendly styles for mobile */
+    @media (hover: none) {
+        .data-table tbody tr:hover {
+            background-color: transparent;
+        }
+
+        .action-btn:active,
+        .agent-assign-select:active {
+            background-color: rgba(30, 60, 114, 0.1);
+        }
+
+        .tab-btn:active {
+            opacity: 0.7;
+        }
+    }
+
+    /* Add a container for the table to allow horizontal scrolling */
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    /* Add scroll indicators */
+    .table-container::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 5px;
+        background: linear-gradient(to left, rgba(0,0,0,0.1), transparent);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .table-container.has-scroll::after {
+        opacity: 1;
+    }
 </style>
 {% endblock %}
+
 {% block content %}
 <div class="content-card">
     <div class="search-box">
@@ -485,12 +641,9 @@
     </div>
 </div>
 
-
-
 <!-- Add this div at the end of the content block, just before the script tags -->
 <div id="notification" class="notification"></div>
 
-{% block extra_js %}
 <script>
     // Add this at the beginning of your JavaScript
     document.getElementById('searchInput').addEventListener('input', function(e) {
@@ -886,6 +1039,23 @@
             }
         });
     });
+
+    // Add scroll indicator functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const tableContainers = document.querySelectorAll('.table-container');
+        
+        tableContainers.forEach(container => {
+            const checkScroll = () => {
+                if (container.scrollWidth > container.clientWidth) {
+                    container.classList.add('has-scroll');
+                } else {
+                    container.classList.remove('has-scroll');
+                }
+            };
+
+            checkScroll();
+            window.addEventListener('resize', checkScroll);
+        });
+    });
 </script>
-{% endblock %}
 {% endblock %}
