@@ -6,89 +6,7 @@
 <h1>My Assigned Applications</h1>
 <p>Manage your assigned loan applications</p>
 {% endblock header_text %}
-
-{% block content %}
-<div class="content-card">
-    <div class="search-filter-container">
-        <div class="search-box">
-            <form method="GET" action="." class="search-form" id="searchForm">
-                <input type="text" 
-                       name="search" 
-                       id="searchInput" 
-                       class="form-control" 
-                       placeholder="Search by name, phone, reference number or scheme..."
-                       value="{{ search_query }}"
-                       autocomplete="off">
-                <button type="submit" class="search-btn">Search</button>
-                {% if search_query %}
-                    <a href="." class="clear-search">Clear</a>
-                {% endif %}
-            </form>
-        </div>
-        <select class="form-select status-filter" id="statusFilter">
-            <option value="">All Status</option>
-            {% for status in status_choices %}
-            <option value="{{ status.value }}">{{ status.label }}</option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <!-- Stats Summary -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <h3>Total Applications</h3>
-            <div class="stat-value">{{ all_applications }}</div>
-        </div>
-        <div class="stat-card">
-            <h3>Processing</h3>
-            <div class="stat-value">{{ processing }}</div>
-        </div>
-        <div class="stat-card">
-            <h3>Completed</h3>
-            <div class="stat-value">{{ completed }}</div>
-        </div>
-        <div class="stat-card">
-            <h3>Rejected</h3>
-            <div class="stat-value">{{ rejected }}</div>
-        </div>
-    </div>
-
-    <!-- Applications Table -->
-    <div class="applications-table">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Reference</th>
-                    <th>Name</th>
-                    <th>Phone</th>
-                    <th>Scheme</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for application in applications %}
-                    <tr onclick="window.location='{% url 'dashboard:see-application-details' application.id %}'"
-                        class="application-row"
-                        style="cursor: pointer;">
-                        <td>{{ application.reference_number }}</td>
-                        <td>{{ application.name }}</td>
-                        <td>{{ application.phone_number }}</td>
-                        <td>{{ application.scheme.title }}</td>
-                        <td>
-                            <span class="status-badge status-{{ application.status }}">
-                                {{ application.get_status_display }}
-                            </span>
-                        </td>
-                    </tr>
-                {% empty %}
-                    <tr><td colspan="5">No applications found</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div id="notification" class="notification"></div>
+{% block extra_css %}
 
 <style>
     .search-filter-container {
@@ -251,6 +169,92 @@
         transform: translateY(0);
     }
 </style>
+
+{% endblock %}
+{% block content %}
+<div class="content-card">
+    <div class="search-filter-container">
+        <div class="search-box">
+            <form method="GET" action="." class="search-form" id="searchForm">
+                <input type="text" 
+                       name="search" 
+                       id="searchInput" 
+                       class="form-control" 
+                       placeholder="Search by name, phone, reference number or scheme..."
+                       value="{{ search_query }}"
+                       autocomplete="off">
+                <button type="submit" class="search-btn">Search</button>
+                {% if search_query %}
+                    <a href="." class="clear-search">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+        <select class="form-select status-filter" id="statusFilter">
+            <option value="">All Status</option>
+            {% for status in status_choices %}
+            <option value="{{ status.value }}">{{ status.label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Applications</h3>
+            <div class="stat-value">{{ all_applications }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Processing</h3>
+            <div class="stat-value">{{ processing }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Completed</h3>
+            <div class="stat-value">{{ completed }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Rejected</h3>
+            <div class="stat-value">{{ rejected }}</div>
+        </div>
+    </div>
+
+    <!-- Applications Table -->
+    <div class="applications-table">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Scheme</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for application in applications %}
+                    <tr onclick="window.location='{% url 'dashboard:see-application-details' application.id %}'"
+                        class="application-row"
+                        style="cursor: pointer;">
+                        <td>{{ application.reference_number }}</td>
+                        <td>{{ application.name }}</td>
+                        <td>{{ application.phone_number }}</td>
+                        <td>{{ application.scheme.title }}</td>
+                        <td>
+                            <span class="status-badge status-{{ application.status }}">
+                                {{ application.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5">No applications found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="notification" class="notification"></div>
+
+
 
 {% endblock content %}
 

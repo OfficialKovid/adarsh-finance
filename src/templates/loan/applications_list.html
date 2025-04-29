@@ -7,191 +7,7 @@
 <p>Manage and track all loan applications</p>
 {% endblock %}
 
-{% block content %}
-<div class="content-card">
-    <div class="search-box">
-        <form method="GET" action="." class="search-form" id="searchForm">
-            <div class="search-input-wrapper">
-                <input type="text" 
-                       name="search" 
-                       id="searchInput" 
-                       class="form-control" 
-                       placeholder="Search by name, phone, reference number, scheme or agent..."
-                       value="{{ search_query }}"
-                       autocomplete="off">
-                <div id="searchSuggestions" class="search-suggestions"></div>
-            </div>
-            <input type="hidden" name="section" value="{{ current_section }}">
-            <button type="submit" class="search-btn">Search</button>
-            {% if search_query %}
-                <a href="?section={{ current_section }}" class="clear-search">Clear</a>
-            {% endif %}
-        </form>
-        {% if search_query %}
-            <div class="search-results-info">
-                Found {{ search_count }} result{{ search_count|pluralize }} for "{{ search_query }}"
-            </div>
-        {% endif %}
-    </div>
-    <!-- Remove filters from top -->
-    <!-- Tabs -->
-    <div class="section-tabs">
-        <button class="tab-btn {% if current_section == 'all-applications' %}active{% endif %}" data-section="all-applications">
-            All Applications <span class="count">{{ all_applications }}</span>
-        </button>
-        <button class="tab-btn {% if current_section == 'new-leads' %}active{% endif %}" data-section="new-leads">
-            New Leads <span class="count">{{ new_leads }}</span>
-        </button>
-        <button class="tab-btn {% if current_section == 'processing' %}active{% endif %}" data-section="processing">
-            Processing <span class="count">{{ processing }}</span>
-        </button>
-        <button class="tab-btn {% if current_section == 'completed' %}active{% endif %}" data-section="completed">
-            Completed <span class="count">{{ completed }}</span>
-        </button>
-        <button class="tab-btn {% if current_section == 'rejected' %}active{% endif %}" data-section="rejected">
-            Rejected <span class="count">{{ rejected }}</span>
-        </button>
-    </div>
-
-    <!-- Section Tables -->
-    <div class="section-content">
-        <div id="all-applications" class="section {% if current_section == 'all-applications' %}active{% endif %}">
-            <h3>All Applications</h3>
-            <div class="section-filters">
-                <div class="filter-group">
-                    <label>Status:</label>
-                    <select class="form-select status-filter" data-section="all-applications">
-                        <option value="">All</option>
-                        {% for status in status_choices %}
-                        <option value="{{ status.value }}">{{ status.label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Scheme:</label>
-                    <select class="form-select scheme-filter" data-section="all-applications">
-                        <option value="">All</option>
-                        {% for scheme in schemes %}
-                        <option value="{{ scheme.id }}">{{ scheme.title }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Agent:</label>
-                    <select class="form-select agent-filter" data-section="all-applications">
-                        <option value="">All</option>
-                        {% for agent in agents %}
-                        <option value="{{ agent.id }}">{{ agent.get_full_name|default:agent.username }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            {% include "loan/includes/applications_table.html" with applications=applications %}
-        </div>
-
-        <div id="new-leads" class="section {% if current_section == 'new-leads' %}active{% endif %}">
-            <h3>New Leads</h3>
-            <div class="section-filters">
-                <div class="filter-group">
-                    <label>Scheme:</label>
-                    <select class="form-select scheme-filter" data-section="new-leads">
-                        <option value="">All</option>
-                        {% for scheme in schemes %}
-                        <option value="{{ scheme.id }}">{{ scheme.title }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            {% include "loan/includes/applications_table.html" with applications=applications %}
-        </div>
-
-        <div id="processing" class="section {% if current_section == 'processing' %}active{% endif %}">
-            <h3>Processing Applications</h3>
-            <div class="section-filters">
-                <div class="filter-group">
-                    <label>Status:</label>
-                    <select class="form-select status-filter" data-section="processing">
-                        <option value="">All</option>
-                        <option value="assigned">Assigned</option>
-                        <option value="detail_collection">Detail Collection</option>
-                        <option value="form_filled">Form Filled</option>
-                        <option value="under_review">Under Review</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Scheme:</label>
-                    <select class="form-select scheme-filter" data-section="processing">
-                        <option value="">All</option>
-                        {% for scheme in schemes %}
-                        <option value="{{ scheme.id }}">{{ scheme.title }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Agent:</label>
-                    <select class="form-select agent-filter" data-section="processing">
-                        <option value="">All</option>
-                        {% for agent in agents %}
-                        <option value="{{ agent.id }}">{{ agent.get_full_name|default:agent.username }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            {% include "loan/includes/applications_table.html" with applications=applications %}
-        </div>
-
-        <!-- Keep other sections as they are but add scheme filter -->
-        <div id="completed" class="section {% if current_section == 'completed' %}active{% endif %}">
-            <h3>Completed Applications</h3>
-            <div class="section-filters">
-                <div class="filter-group">
-                    <label>Scheme:</label>
-                    <select class="form-select scheme-filter" data-section="completed">
-                        <option value="">All</option>
-                        {% for scheme in schemes %}
-                        <option value="{{ scheme.id }}">{{ scheme.title }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Agent:</label>
-                    <select class="form-select agent-filter" data-section="completed">
-                        <option value="">All</option>
-                        {% for agent in agents %}
-                        <option value="{{ agent.id }}">{{ agent.get_full_name|default:agent.username }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            {% include "loan/includes/applications_table.html" with applications=applications %}
-        </div>
-
-        <div id="rejected" class="section {% if current_section == 'rejected' %}active{% endif %}">
-            <h3>Rejected Applications</h3>
-            <div class="section-filters">
-                <div class="filter-group">
-                    <label>Scheme:</label>
-                    <select class="form-select scheme-filter" data-section="rejected">
-                        <option value="">All</option>
-                        {% for scheme in schemes %}
-                        <option value="{{ scheme.id }}">{{ scheme.title }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Agent:</label>
-                    <select class="form-select agent-filter" data-section="rejected">
-                        <option value="">All</option>
-                        {% for agent in agents %}
-                        <option value="{{ agent.id }}">{{ agent.get_full_name|default:agent.username }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            {% include "loan/includes/applications_table.html" with applications=applications %}
-        </div>
-    </div>
-</div>
+{% block extra_css %}
 
 <style>
     .filters {
@@ -482,6 +298,194 @@
         pointer-events: auto;
     }
 </style>
+{% endblock %}
+{% block content %}
+<div class="content-card">
+    <div class="search-box">
+        <form method="GET" action="." class="search-form" id="searchForm">
+            <div class="search-input-wrapper">
+                <input type="text" 
+                       name="search" 
+                       id="searchInput" 
+                       class="form-control" 
+                       placeholder="Search by name, phone, reference number, scheme or agent..."
+                       value="{{ search_query }}"
+                       autocomplete="off">
+                <div id="searchSuggestions" class="search-suggestions"></div>
+            </div>
+            <input type="hidden" name="section" value="{{ current_section }}">
+            <button type="submit" class="search-btn">Search</button>
+            {% if search_query %}
+                <a href="?section={{ current_section }}" class="clear-search">Clear</a>
+            {% endif %}
+        </form>
+        {% if search_query %}
+            <div class="search-results-info">
+                Found {{ search_count }} result{{ search_count|pluralize }} for "{{ search_query }}"
+            </div>
+        {% endif %}
+    </div>
+    <!-- Remove filters from top -->
+    <!-- Tabs -->
+    <div class="section-tabs">
+        <button class="tab-btn {% if current_section == 'all-applications' %}active{% endif %}" data-section="all-applications">
+            All Applications <span class="count">{{ all_applications }}</span>
+        </button>
+        <button class="tab-btn {% if current_section == 'new-leads' %}active{% endif %}" data-section="new-leads">
+            New Leads <span class="count">{{ new_leads }}</span>
+        </button>
+        <button class="tab-btn {% if current_section == 'processing' %}active{% endif %}" data-section="processing">
+            Processing <span class="count">{{ processing }}</span>
+        </button>
+        <button class="tab-btn {% if current_section == 'completed' %}active{% endif %}" data-section="completed">
+            Completed <span class="count">{{ completed }}</span>
+        </button>
+        <button class="tab-btn {% if current_section == 'rejected' %}active{% endif %}" data-section="rejected">
+            Rejected <span class="count">{{ rejected }}</span>
+        </button>
+    </div>
+
+    <!-- Section Tables -->
+    <div class="section-content">
+        <div id="all-applications" class="section {% if current_section == 'all-applications' %}active{% endif %}">
+            <h3>All Applications</h3>
+            <div class="section-filters">
+                <div class="filter-group">
+                    <label>Status:</label>
+                    <select class="form-select status-filter" data-section="all-applications">
+                        <option value="">All</option>
+                        {% for status in status_choices %}
+                        <option value="{{ status.value }}">{{ status.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Scheme:</label>
+                    <select class="form-select scheme-filter" data-section="all-applications">
+                        <option value="">All</option>
+                        {% for scheme in schemes %}
+                        <option value="{{ scheme.id }}">{{ scheme.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Agent:</label>
+                    <select class="form-select agent-filter" data-section="all-applications">
+                        <option value="">All</option>
+                        {% for agent in agents %}
+                        <option value="{{ agent.id }}">{{ agent.get_full_name|default:agent.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% include "loan/includes/applications_table.html" with applications=applications %}
+        </div>
+
+        <div id="new-leads" class="section {% if current_section == 'new-leads' %}active{% endif %}">
+            <h3>New Leads</h3>
+            <div class="section-filters">
+                <div class="filter-group">
+                    <label>Scheme:</label>
+                    <select class="form-select scheme-filter" data-section="new-leads">
+                        <option value="">All</option>
+                        {% for scheme in schemes %}
+                        <option value="{{ scheme.id }}">{{ scheme.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% include "loan/includes/applications_table.html" with applications=applications %}
+        </div>
+
+        <div id="processing" class="section {% if current_section == 'processing' %}active{% endif %}">
+            <h3>Processing Applications</h3>
+            <div class="section-filters">
+                <div class="filter-group">
+                    <label>Status:</label>
+                    <select class="form-select status-filter" data-section="processing">
+                        <option value="">All</option>
+                        <option value="assigned">Assigned</option>
+                        <option value="detail_collection">Detail Collection</option>
+                        <option value="form_filled">Form Filled</option>
+                        <option value="under_review">Under Review</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Scheme:</label>
+                    <select class="form-select scheme-filter" data-section="processing">
+                        <option value="">All</option>
+                        {% for scheme in schemes %}
+                        <option value="{{ scheme.id }}">{{ scheme.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Agent:</label>
+                    <select class="form-select agent-filter" data-section="processing">
+                        <option value="">All</option>
+                        {% for agent in agents %}
+                        <option value="{{ agent.id }}">{{ agent.get_full_name|default:agent.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% include "loan/includes/applications_table.html" with applications=applications %}
+        </div>
+
+        <!-- Keep other sections as they are but add scheme filter -->
+        <div id="completed" class="section {% if current_section == 'completed' %}active{% endif %}">
+            <h3>Completed Applications</h3>
+            <div class="section-filters">
+                <div class="filter-group">
+                    <label>Scheme:</label>
+                    <select class="form-select scheme-filter" data-section="completed">
+                        <option value="">All</option>
+                        {% for scheme in schemes %}
+                        <option value="{{ scheme.id }}">{{ scheme.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Agent:</label>
+                    <select class="form-select agent-filter" data-section="completed">
+                        <option value="">All</option>
+                        {% for agent in agents %}
+                        <option value="{{ agent.id }}">{{ agent.get_full_name|default:agent.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% include "loan/includes/applications_table.html" with applications=applications %}
+        </div>
+
+        <div id="rejected" class="section {% if current_section == 'rejected' %}active{% endif %}">
+            <h3>Rejected Applications</h3>
+            <div class="section-filters">
+                <div class="filter-group">
+                    <label>Scheme:</label>
+                    <select class="form-select scheme-filter" data-section="rejected">
+                        <option value="">All</option>
+                        {% for scheme in schemes %}
+                        <option value="{{ scheme.id }}">{{ scheme.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Agent:</label>
+                    <select class="form-select agent-filter" data-section="rejected">
+                        <option value="">All</option>
+                        {% for agent in agents %}
+                        <option value="{{ agent.id }}">{{ agent.get_full_name|default:agent.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% include "loan/includes/applications_table.html" with applications=applications %}
+        </div>
+    </div>
+</div>
+
+
 
 <!-- Add this div at the end of the content block, just before the script tags -->
 <div id="notification" class="notification"></div>

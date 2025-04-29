@@ -4,7 +4,36 @@
 <h1>Agent Management</h1>
 <p>Manage and monitor your team of agents</p>
 {% endblock %}
+{% block extra_css %}
+<style>
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .status-badge.success {
+        background: var(--success-color);
+        color: white;
+    }
+    .status-badge.warning {
+        background: var(--warning-color);
+        color: white;
+    }
+    .action-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 0 4px;
+        transition: all 0.3s;
+    }
+    .action-btn:hover {
+        opacity: 0.8;
+    }
+</style>
 
+{% endblock %}
 {% block content %}
 <!-- Stats Grid -->
 <div class="stats-grid">
@@ -134,33 +163,7 @@
     </div>
 </div>
 
-<style>
-    .status-badge {
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: bold;
-    }
-    .status-badge.success {
-        background: var(--success-color);
-        color: white;
-    }
-    .status-badge.warning {
-        background: var(--warning-color);
-        color: white;
-    }
-    .action-btn {
-        padding: 6px 12px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        margin: 0 4px;
-        transition: all 0.3s;
-    }
-    .action-btn:hover {
-        opacity: 0.8;
-    }
-</style>
+
 
 <script>
     function showAddAgentModal() {
